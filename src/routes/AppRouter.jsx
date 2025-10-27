@@ -1,5 +1,10 @@
 // routes/AppRouter.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Layout from "../components/Layout";
 import LoginPage from "../pages/Auth/LoginPage";
 import Dashboard from "../pages/Dashboard/DashboardPage";
@@ -11,6 +16,9 @@ import AsistenciasPage from "../pages/Asistencias/AttendancesPage";
 import ActividadesCalendarioPage from "../pages/Actividades/ActividadesCalendarioPage";
 // ...otras páginas
 
+import PrivateRoute from "./PrivateRoute";
+
+
 export default function AppRouter() {
   return (
     <Router>
@@ -20,15 +28,70 @@ export default function AppRouter() {
 
         {/* Rutas protegidas - envueltas en Layout */}
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="beneficiarios" element={<AdultoMayorPage />} />
-          <Route path="actividades" element={<ActividadesPage />} />
-          <Route path="roles" element={<RolesPage />} />
-          <Route path="users" element={<UsuariosPage />} />
-          <Route path="asistencias" element={<AsistenciasPage />} />
-          <Route path="calendario" element={<ActividadesCalendarioPage />} />
-          {/* Otras páginas */}
+          <Route
+            index
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="beneficiarios"
+            element={
+              <PrivateRoute>
+                <AdultoMayorPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="actividades"
+            element={
+              <PrivateRoute>
+                <ActividadesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="roles"
+            element={
+              <PrivateRoute>
+                <RolesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <PrivateRoute>
+                <UsuariosPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="asistencias"
+            element={
+              <PrivateRoute>
+                <AsistenciasPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="calendario"
+            element={
+              <PrivateRoute>
+                <ActividadesCalendarioPage />
+              </PrivateRoute>
+            }
+          />
         </Route>
 
         {/* Ruta fallback 404 */}
