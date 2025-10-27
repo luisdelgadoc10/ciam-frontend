@@ -32,7 +32,7 @@ export default function AppRouter() {
         </Route>
 
         {/* Ruta fallback 404 */}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
