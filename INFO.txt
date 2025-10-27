@@ -1,0 +1,67 @@
+ciam-frontend/
+│
+├── public/
+│   └── index.html
+│
+├── src/
+│   ├── api/                     # Lógica de conexión con el backend Laravel
+│   │   ├── axiosClient.js       # Configuración base de Axios (con URL y headers)
+│   │   ├── endpoints.js         # Constantes con las rutas de la API
+│   │   └── services/
+│   │       ├── usersService.js  # Ejemplo: funciones para usuarios
+│   │       ├── authService.js   # Ejemplo: funciones para login, logout, etc.
+│   │       └── ...              # Otros módulos (beneficiarios, clasificaciones, etc.)
+│
+│   ├── assets/                  # Imágenes, íconos, logos, etc.
+│   │   └── logo.png
+│
+│   ├── components/              # Componentes reutilizables y presentacionales
+│   │   ├── ui/                  # Botones, inputs, modales, tablas, etc.
+│   │   ├── layout/              # Navbar, Sidebar, Footer, etc.
+│   │   └── shared/              # Componentes pequeños (cards, loaders, etc.)
+│
+│   ├── context/                 # Contextos globales (AuthContext, ThemeContext)
+│   │   ├── AuthContext.jsx
+│   │   └── ThemeContext.jsx
+│
+│   ├── hooks/                   # Custom hooks (useAuth, useFetch, etc.)
+│   │   ├── useAuth.js
+│   │   └── useFetch.js
+│
+│   ├── pages/                   # Vistas principales del sistema
+│   │   ├── Auth/
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── RegisterPage.jsx
+│   │   ├── Dashboard/
+│   │   │   ├── DashboardPage.jsx
+│   │   │   └── components/
+│   │   ├── Beneficiarios/
+│   │   │   ├── BeneficiariosPage.jsx
+│   │   │   └── components/
+│   │   └── Clasificaciones/
+│   │       ├── ClasificacionesPage.jsx
+│   │       └── components/
+│
+│   ├── routes/                  # Configuración de navegación
+│   │   ├── AppRouter.jsx
+│   │   ├── PrivateRoute.jsx
+│   │   └── PublicRoute.jsx
+│
+│   ├── store/                   # Estado global (opcional: Zustand, Redux o Context)
+│   │   └── userStore.js
+│
+│   ├── styles/                  # Archivos CSS/Tailwind adicionales
+│   │   └── index.css
+│
+│   ├── utils/                   # Funciones y helpers reutilizables
+│   │   ├── formatDate.js
+│   │   ├── validations.js
+│   │   └── constants.js
+│
+│   ├── App.jsx                  # Componente raíz
+│   ├── main.jsx                 # Punto de entrada Vite
+│   └── index.css
+│
+├── .env                         # Variables de entorno (ej: VITE_API_URL)
+├── package.json
+└── vite.config.js
