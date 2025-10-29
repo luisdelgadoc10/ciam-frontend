@@ -10,19 +10,21 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true); // Para mostrar un loader inicial
 
-  // 🔄 Verificar sesión al montar el componente
+  //  Verificar sesión al montar el componente
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem("token");
-      
+
       if (storedToken) {
         // Configurar token en axios
-        axiosClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        
+        axiosClient.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${storedToken}`;
+
         try {
           // Verificar que el token siga válido con /api/me
-          const response = await axiosClient.get('/me');
-          
+          const response = await axiosClient.get("/me");
+
           setToken(storedToken);
           setUser(response.data);
           localStorage.setItem("user", JSON.stringify(response.data));
@@ -31,21 +33,21 @@ export const AuthProvider = ({ children }) => {
           // Limpiar todo si el token no es válido
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          delete axiosClient.defaults.headers.common['Authorization'];
+          delete axiosClient.defaults.headers.common["Authorization"];
         }
       }
-      
+
       setLoading(false);
     };
 
     initializeAuth();
   }, []);
 
-  // 🔐 Login
+  //  Login
   const loginUser = async (email, password) => {
     try {
       const data = await login(email, password);
-      
+
       const accessToken = data?.access_token;
       const userData = data?.user;
 
@@ -54,21 +56,22 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Configurar token en axios
-      axiosClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      axiosClient.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${accessToken}`;
 
       // Guardar en estado y localStorage
       setToken(accessToken);
       setUser(userData);
       localStorage.setItem("token", accessToken);
       localStorage.setItem("user", JSON.stringify(userData));
-
     } catch (error) {
       console.error("Login fallido:", error.response?.data || error.message);
       throw error;
     }
   };
 
-  // 🚪 Logout
+  // Logout
   const logoutUser = async () => {
     try {
       await logout();
@@ -80,16 +83,16 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       localStorage.removeItem("user");
       localStorage.removeItem("token");
-      delete axiosClient.defaults.headers.common['Authorization'];
+      delete axiosClient.defaults.headers.common["Authorization"];
     }
   };
 
-  // 🔒 Verificar permisos (usando los roles del /api/me)
+  //  Verificar permisos (usando los roles del /api/me)
   const hasPermission = (permissionName) => {
     if (!user?.roles) return false;
-    
-    return user.roles.some(role =>
-      role.permissions?.some(permission => permission.name === permissionName)
+
+    return user.roles.some((role) =>
+      role.permissions?.some((permission) => permission.name === permissionName)
     );
   };
 

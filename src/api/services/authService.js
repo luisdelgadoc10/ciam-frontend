@@ -13,7 +13,7 @@ export const login = async (email, password) => {
   }
 };
 
-// Nueva función logout
+// Función logout
 export const logout = async () => {
   try {
     const response = await axiosClient.post("/logout");

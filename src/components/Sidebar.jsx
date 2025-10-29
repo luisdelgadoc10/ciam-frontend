@@ -86,17 +86,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
         : "text-gray-700 hover:bg-slate-100 hover:border-l-4 hover:border-blue-700"
     }`;
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      alert("Sesión cerrada");
-      setIsMobileOpen(false);
-      window.location.href = "/login";
-    } catch (err) {
-      console.error("Error al cerrar sesión:", err);
-    }
-  };
-
+  
   const renderMenu = () => (
     <div className="flex-1 overflow-y-auto px-2 custom-scroll">
       {menuGroups.map((group) => {
