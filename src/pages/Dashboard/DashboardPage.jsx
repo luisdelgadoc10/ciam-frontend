@@ -1,6 +1,42 @@
 import { Users, Activity } from "lucide-react";
 import useDashboardLocal from "../../hooks/useDashboardLocal";
 
+// Componente de tarjeta de escuela
+function SchoolCard({ title, description, image, gradient, icon, badgeColor }) {
+  return (
+    <div
+      className={`relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 backdrop-blur-sm bg-gradient-to-br ${gradient} text-white p-6 h-full flex flex-col transition-transform duration-300 hover:scale-[1.02]`}
+    >
+      {/* Imagen */}
+      <div className="relative mb-4">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-64 object-cover rounded-xl"
+        />
+        {/* Anillo decorativo */}
+        <div className={`absolute inset-0 flex items-center justify-center pointer-events-none`}>
+          <div className={`w-3/4 h-1/2 rounded-full border-4 ${badgeColor} opacity-30`}></div>
+        </div>
+      </div>
+
+      {/* Badge "Escuela de" */}
+      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${badgeColor} mb-3`}>
+        <span>🎓 Escuela de</span>
+      </div>
+
+      {/* Título y descripción */}
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      <p className="text-sm opacity-90 leading-relaxed flex-grow">{description}</p>
+
+      {/* Icono en esquina superior derecha */}
+      <div className="absolute top-4 right-4 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-lg">
+        {icon}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { stats, activities, users, loading } = useDashboardLocal();
 
@@ -15,6 +51,7 @@ export default function Dashboard() {
     );
   }
 
+  // Cards de estadísticas
   const cards = [
     {
       title: "Usuarios",
@@ -27,6 +64,46 @@ export default function Dashboard() {
       value: stats.total_activities,
       icon: <Activity className="w-10 h-10" />,
       gradient: "from-green-400 via-teal-400 to-cyan-500",
+    },
+  ];
+
+  // Datos de las escuelas
+  const schools = [
+    {
+      id: 1,
+      title: "PROGRAMACIÓN Y DESARROLLO WEB",
+      description: "Aprende programación y desarrollo web desde cero con las tecnologías más demandadas del mercado.",
+      image: "https://via.placeholder.com/300x400?text=Programaci%C3%B3n+Web",
+      gradient: "from-blue-600 to-blue-800",
+      icon: "💻",
+      badgeColor: "bg-blue-500",
+    },
+    {
+      id: 2,
+      title: "DESARROLLO FRONTEND",
+      description: "Domina el desarrollo frontend y crea interfaces web atractivas y funcionales con React, Tailwind y más.",
+      image: "https://via.placeholder.com/300x400?text=Frontend",
+      gradient: "from-green-600 to-green-800",
+      icon: "🎨",
+      badgeColor: "bg-green-500",
+    },
+    {
+      id: 3,
+      title: "DESARROLLO BACKEND",
+      description: "Domina el desarrollo backend en esta escuela especializada que te prepara con Node.js, bases de datos y APIs.",
+      image: "https://via.placeholder.com/300x400?text=Backend",
+      gradient: "from-red-600 to-red-800",
+      icon: "⚙️",
+      badgeColor: "bg-red-500",
+    },
+    {
+      id: 4,
+      title: "INTELIGENCIA ARTIFICIAL",
+      description: "Conviértete en experto en inteligencia artificial en nuestra escuela con enfoque práctico y proyectos reales.",
+      image: "https://via.placeholder.com/300x400?text=IA",
+      gradient: "from-yellow-600 to-yellow-800",
+      icon: "🤖",
+      badgeColor: "bg-yellow-500",
     },
   ];
 
@@ -52,7 +129,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Actividades y Usuarios lado a lado en pantallas grandes */}
+      {/* Actividades y Usuarios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Actividades */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200 shadow-md overflow-hidden">
@@ -95,6 +172,21 @@ export default function Dashboard() {
             )}
           </ul>
         </div>
+      </div>
+
+      {/* Cards de Escuelas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {schools.map((school) => (
+          <SchoolCard
+            key={school.id}
+            title={school.title}
+            description={school.description}
+            image={school.image}
+            gradient={school.gradient}
+            icon={school.icon}
+            badgeColor={school.badgeColor}
+          />
+        ))}
       </div>
     </div>
   );

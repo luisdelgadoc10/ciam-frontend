@@ -37,14 +37,13 @@ export default function AdultoMayorPage() {
         cell: (info) => info.getValue(),
       },
       {
-        accessorKey: "nombres",
-        header: "Nombres",
-        cell: (info) => info.getValue(),
-      },
-      {
-        accessorKey: "apellidos",
-        header: "Apellidos",
-        cell: (info) => info.getValue(),
+        header: "Nombre Completo",
+        accessorFn: (row) =>
+          `${row.nombres || ""} ${row.apellidos || ""}`.trim(),
+        cell: ({ getValue }) => {
+          const nombreCompleto = getValue();
+          return nombreCompleto || "Sin nombre registrado";
+        },
       },
       {
         accessorKey: "sexo.nombre",
@@ -112,11 +111,7 @@ export default function AdultoMayorPage() {
       </div>
 
       {/* Tabla */}
-      <CustomTable 
-        data={adultosMayores} 
-        columns={columns}
-        searchable={true}
-      />
+      <CustomTable data={adultosMayores} columns={columns} searchable={true} />
 
       {/* Modal Crear/Editar */}
       <ModalAdultoForm

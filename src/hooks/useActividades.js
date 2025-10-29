@@ -138,7 +138,7 @@ export default function useActividades() {
     // 👇 Cargar datos en el formulario
     setFormData({
       nombre: actividad.nombre || "",
-      tipo_actividad_id: actividad.tipo_actividad_id || "",
+      tipo_actividad_id: actividad.tipo_actividad?.id?.toString() || "",
       descripcion: actividad.descripcion || "",
       fecha_inicio: actividad.fecha_inicio
         ? new Date(actividad.fecha_inicio).toISOString().slice(0, 16)
@@ -220,19 +220,19 @@ export default function useActividades() {
     showViewModal,
     showInscritosModal,
     showInscribirModal,
-    formData,        // 👈 NUEVO
-    errors,          // 👈 NUEVO
+    formData, // 👈 NUEVO
+    errors, // 👈 NUEVO
     fetchActividades,
     handleView,
     handleEdit,
-    handleCreate,    // 👈 NUEVO
+    handleCreate, // 👈 NUEVO
     handleDelete,
     handleVerInscritos,
     handleInscribir,
     handleInscribirAdulto,
     handleDesinscribir,
     handleFormChange, // 👈 NUEVO
-    handleSubmit,     // 👈 NUEVO
+    handleSubmit, // 👈 NUEVO
     setShowModal,
     setShowViewModal,
     setShowInscritosModal,

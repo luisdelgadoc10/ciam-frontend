@@ -4,6 +4,7 @@ import {
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  assignRoles,
 } from "../api/services/usuariosService";
 
 import { getRoles } from "../api/services/rolesService";
@@ -144,43 +145,55 @@ export default function useUsuarios() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrors({});
+  e.preventDefault();
+  setLoading(true);
+  setErrors({});
 
-    try {
-      // 🧠 Normalizar datos antes de enviar
-      const payload = {
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        email: formData.email,
-        usuario: formData.usuario,
-        fecha_de_nacimiento: formData.fecha_de_nacimiento,
-        password: formData.password || undefined,
-        password_confirmation: formData.password_confirmation || undefined,
-        roles: formData.roles.map((r) => (typeof r === "object" ? r.id : r)), // asegurar IDs limpios
-      };
+  try {
+    // 🧠 Normalizar datos antes de enviar
+    const payload = {
+      nombre: formData.nombre,
+      apellido: formData.apellido,
+      email: formData.email,
+      usuario: formData.usuario,
+      fecha_de_nacimiento: formData.fecha_de_nacimiento,
+      password: formData.password || undefined,
+      password_confirmation: formData.password_confirmation || undefined,
+    };
 
-      if (isEditing && selectedUsuario) {
-        if (!payload.password) delete payload.password; // evitar password vacío
-        await updateUsuario(selectedUsuario.id, payload);
+    if (isEditing && selectedUsuario) {
+      // 1️⃣ Actualizar datos básicos del usuario
+      await updateUsuario(selectedUsuario.id, payload);
+
+      // 2️⃣ Asignar roles después de actualizar
+      if (formData.roles && formData.roles.length > 0) {
+        await assignRoles(selectedUsuario.id, formData.roles);
       } else {
-        await createUsuario(payload);
+        // Si no tiene roles seleccionados, enviar arreglo vacío para "revocar" roles
+        await assignRoles(selectedUsuario.id, []);
       }
 
-      setShowModal(false);
-      await fetchUsuarios();
-    } catch (error) {
-      if (error.response?.data) {
-        console.error("Error detalle:", error.response.data);
-      }
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors);
-      } else {
-        console.error("Error al guardar usuario:", error);
+    } else {
+      // Crear nuevo usuario
+      const nuevo = await createUsuario(payload);
+      // Si se asignan roles al crear, también se hace aquí
+      if (formData.roles && formData.roles.length > 0) {
+        await assignRoles(nuevo.id, formData.roles);
       }
     }
-  };
+
+    setShowModal(false);
+    await fetchUsuarios();
+  } catch (error) {
+    console.error("Error al guardar usuario:", error);
+    if (error.response?.data?.errors) {
+      setErrors(error.response.data.errors);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return {
     usuarios,
