@@ -1,15 +1,13 @@
-// src/components/Sidebar.jsx
+// src/components/Sidebar.jsx (versión limpia — sin UserCard)
 import {
   Home,
-  User,
   Users,
-  X,
-  LogOut,
   ShieldCheck,
   UserPlus,
   SquareActivity,
-  CalendarDays,
   CalendarCheck,
+  CalendarDays,
+  X,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -17,64 +15,29 @@ import { useAuth } from "../context/AuthContext";
 const Logo = () => <div className="text-gray-800 font-bold text-xl">LOGO</div>;
 
 export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
-  const { user, hasPermission, logout } = useAuth();
+  const { hasPermission } = useAuth();
 
   const menuGroups = [
     {
       title: "General",
       items: [
-        {
-          name: "Dashboard",
-          icon: <Home size={18} />,
-          path: "/dashboard",
-          permission: "view-dashboard",
-        },
+        { name: "Dashboard", icon: <Home size={18} />, path: "/dashboard", permission: "view-dashboard" },
       ],
     },
     {
       title: "Acceso",
       items: [
-        {
-          name: "Usuarios",
-          icon: <Users size={18} />,
-          path: "/users",
-          permission: "view-users",
-        },
-        {
-          name: "Roles",
-          icon: <ShieldCheck size={18} />,
-          path: "/roles",
-          permission: "view-roles",
-        },
+        { name: "Usuarios", icon: <Users size={18} />, path: "/users", permission: "view-users" },
+        { name: "Roles", icon: <ShieldCheck size={18} />, path: "/roles", permission: "view-roles" },
       ],
     },
     {
       title: "Mantenedores",
       items: [
-        {
-          name: "Beneficiarios",
-          icon: <UserPlus size={18} />,
-          path: "/beneficiarios",
-          permission: "view-beneficiarios",
-        },
-        {
-          name: "Actividades",
-          icon: <SquareActivity size={18} />,
-          path: "/actividades",
-          permission: "view-actividades",
-        },
-        {
-          name: "Asistencias",
-          icon: <CalendarCheck size={18} />,
-          path: "/asistencias",
-          permission: "view-asistencias",
-        },
-        {
-          name: "Calendario",
-          icon: <CalendarDays size={18} />,
-          path: "/calendario",
-          permission: "view-calendario",
-        },
+        { name: "Beneficiarios", icon: <UserPlus size={18} />, path: "/beneficiarios", permission: "view-beneficiarios" },
+        { name: "Actividades", icon: <SquareActivity size={18} />, path: "/actividades", permission: "view-actividades" },
+        { name: "Asistencias", icon: <CalendarCheck size={18} />, path: "/asistencias", permission: "view-asistencias" },
+        { name: "Calendario", icon: <CalendarDays size={18} />, path: "/calendario", permission: "view-calendario" },
       ],
     },
   ];
@@ -111,53 +74,15 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
     </div>
   );
 
-  const UserCard = () => {
-    const { user, logout } = useAuth();
-
-    const handleLogout = async () => {
-      try {
-        await logout();
-        window.location.href = "/login";
-      } catch (err) {
-        console.error("Error al cerrar sesión:", err);
-      }
-    };
-
-    const userRole = user?.rol || user?.roles?.[0]?.name || "Usuario";
-    const initials = `${user?.nombre?.charAt(0) || "?"}${user?.apellido?.charAt(0) || "?"}`.toUpperCase();
-
-    return (
-      <div className="px-4 pb-4 mt-auto">
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="w-9 h-9 rounded-full bg-blue-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-            {initials}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900 truncate">{user?.nombre} {user?.apellido}</p>
-            <p className="text-xs text-gray-600 truncate">{userRole}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            aria-label="Cerrar sesión"
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
-            title="Cerrar sesión"
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
-      {/* Sidebar de escritorio */}
+      {/* Sidebar escritorio */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-white text-gray-800 h-screen sticky top-0 border-r border-gray-200">
         <div className="p-5">
           <Logo />
         </div>
         {renderMenu()}
-        <UserCard />
+        {/* ✅ UserCard ELIMINADO */}
       </aside>
 
       {/* Sidebar móvil */}
@@ -178,7 +103,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
               </button>
             </div>
             {renderMenu()}
-            <UserCard />
+            {/* ✅ UserCard ELIMINADO */}
           </aside>
         </>
       )}

@@ -1,6 +1,9 @@
 // src/pages/Asistencias/components/ModalAttendanceForm.jsx
-import { X } from "lucide-react";
 import { useEffect } from "react";
+import { UserCheck, Calendar, Users, CheckCircle2, Save } from "lucide-react";
+import ModalBase from "../../../components/ui/ModalBase";
+import InputField from "../../../components/ui/InputField";
+import SelectField from "../../../components/ui/SelectField";
 
 // Componente interno que SIEMPRE monta hooks
 function ModalContent({
@@ -15,6 +18,8 @@ function ModalContent({
   setFormData,
   onClose,
 }) {
+  const isEdit = modo === "editar";
+
   useEffect(() => {
     if (!formData.activity_id) return;
 
@@ -40,173 +45,134 @@ function ModalContent({
     return () => clearTimeout(timer);
   }, [formData.activity_id, activities, formData.attendance_date, setFormData]);
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">
-            {modo === "crear" ? "Registrar Asistencia" : "Editar Asistencia"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+  const renderFooter = () => (
+    <>
+      <button
+        type="button"
+        onClick={onClose}
+        disabled={loading}
+        className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 dark:hover:bg-slate-700 dark:text-gray-300 transition"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        onClick={onSubmit}
+        disabled={loading || !formData.activity_id || inscritosActividad.length === 0}
+        className="flex items-center gap-2 px-5 py-2.5 bg-blue-700 text-white rounded-xl shadow hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Save className="w-5 h-5" />
+        {loading ? "Guardando..." : isEdit ? "Actualizar" : "Registrar"}
+      </button>
+    </>
+  );
 
-        {/* Form */}
-        <form onSubmit={onSubmit} className="p-6 space-y-4">
-          {/* ... (todo el formulario igual) ... */}
-          {/* Actividad */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Actividad <span className="text-red-500">*</span>
-            </label>
-            <select
+  return (
+    <ModalBase
+      show={true}
+      onClose={onClose}
+      title={
+        <span className="flex items-center gap-2">
+          <UserCheck className="w-6 h-6 text-blue-600" />
+          {isEdit ? "Editar Asistencia" : "Registrar Asistencia"}
+        </span>
+      }
+      width="max-w-2xl"
+      footer={
+        <div className="p-6 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3 bg-white/80 dark:bg-slate-900/80 rounded-b-2xl">
+          {renderFooter()}
+        </div>
+      }
+    >
+      <div className="space-y-8">
+        {/* Sección: Información de Asistencia */}
+        <section>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Información de Asistencia
+          </h3>
+          <div className="space-y-5 bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
+            {/* Actividad */}
+            <SelectField
+              label="Actividad"
               name="activity_id"
               value={formData.activity_id}
               onChange={onChange}
-              disabled={modo === "editar"}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.activity_id ? "border-red-500" : "border-gray-300"
-              } ${modo === "editar" ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              options={activities.map(act => ({
+                id: act.id,
+                nombre: act.nombre || act.name
+              }))}
+              disabled={isEdit}
               required
-            >
-              <option value="">Seleccione una actividad</option>
-              {activities.map((act) => (
-                <option key={act.id} value={act.id}>
-                  {act.nombre || act.name}
-                </option>
-              ))}
-            </select>
-            {errors.activity_id && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.activity_id[0]}
-              </p>
-            )}
-          </div>
-
-          {/* Adulto Mayor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adulto Mayor Inscrito <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="adulto_mayor_id"
-              value={formData.adulto_mayor_id}
-              onChange={onChange}
-              disabled={!formData.activity_id || modo === "editar"}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.adulto_mayor_id ? "border-red-500" : "border-gray-300"
-              } ${
-                !formData.activity_id || modo === "editar"
-                  ? "bg-gray-100 cursor-not-allowed"
-                  : ""
-              }`}
-              required
-            >
-              <option value="">
-                {!formData.activity_id
-                  ? "Primero selecciona una actividad"
-                  : inscritosActividad.length === 0
-                  ? "No hay adultos mayores inscritos"
-                  : "Seleccione un adulto mayor"}
-              </option>
-              {inscritosActividad.map((adulto) => (
-                <option key={adulto.id} value={adulto.id}>
-                  {adulto.nombres} {adulto.apellidos} - {adulto.dni}
-                </option>
-              ))}
-            </select>
-            {errors.adulto_mayor_id && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.adulto_mayor_id[0]}
-              </p>
-            )}
-            {formData.activity_id && inscritosActividad.length === 0 && (
-              <p className="text-amber-600 text-sm mt-1">
-                ⚠️ Esta actividad no tiene adultos mayores inscritos.
-              </p>
-            )}
-          </div>
-
-          {/* Fecha de Asistencia */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fecha de Asistencia <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="attendance_date"
-              value={formData.attendance_date || ""}
-              readOnly
-              className={`w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed ${
-                errors.attendance_date ? "border-red-500" : "border-gray-300"
-              }`}
-              required
+              error={errors.activity_id}
             />
-            {errors.attendance_date && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.attendance_date[0]}
-              </p>
-            )}
-          </div>
 
-          {/* Estado */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Estado <span className="text-red-500">*</span>
-            </label>
-            <select
+            {/* Adulto Mayor */}
+            <div>
+              <SelectField
+                label="Adulto Mayor Inscrito"
+                name="adulto_mayor_id"
+                value={formData.adulto_mayor_id}
+                onChange={onChange}
+                options={inscritosActividad.map(adulto => ({
+                  id: adulto.id,
+                  nombre: `${adulto.nombres} ${adulto.apellidos} - ${adulto.dni}`
+                }))}
+                disabled={!formData.activity_id || isEdit}
+                required
+                error={errors.adulto_mayor_id}
+              />
+              {formData.activity_id && inscritosActividad.length === 0 && (
+                <p className="text-amber-600 dark:text-amber-500 text-sm mt-1 flex items-center gap-1">
+                  <span>⚠️</span> Esta actividad no tiene adultos mayores inscritos.
+                </p>
+              )}
+            </div>
+
+            {/* Fecha de Asistencia */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fecha de Asistencia <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                </div>
+                <input
+                  type="date"
+                  name="attendance_date"
+                  value={formData.attendance_date || ""}
+                  readOnly
+                  required
+                  className="w-full pl-10 pr-3 py-2.5 border rounded-xl bg-gray-100 dark:bg-slate-700 cursor-not-allowed opacity-60 border-gray-300 dark:border-slate-600 dark:text-gray-300 focus:outline-none"
+                />
+              </div>
+              {errors.attendance_date && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.attendance_date[0]}
+                </p>
+              )}
+            </div>
+
+            {/* Estado */}
+            <SelectField
+              label="Estado"
               name="status"
               value={formData.status}
               onChange={onChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.status ? "border-red-500" : "border-gray-300"
-              }`}
+              options={[
+                { id: "asistió", nombre: "Asistió" },
+                { id: "falta", nombre: "Falta" },
+                { id: "tardanza", nombre: "Tardanza" },
+                { id: "justificado", nombre: "Justificado" }
+              ]}
               required
-            >
-              <option value="asistió">Asistió</option>
-              <option value="falta">Falta</option>
-              <option value="tardanza">Tardanza</option>
-              <option value="justificado">Justificado</option>
-            </select>
-            {errors.status && (
-              <p className="text-red-500 text-sm mt-1">{errors.status[0]}</p>
-            )}
+              error={errors.status}
+            />
           </div>
-
-          {/* Botones */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={
-                loading ||
-                !formData.activity_id ||
-                inscritosActividad.length === 0
-              }
-              className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-900 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {loading
-                ? "Guardando..."
-                : modo === "crear"
-                ? "Registrar"
-                : "Actualizar"}
-            </button>
-          </div>
-        </form>
+        </section>
       </div>
-    </div>
+    </ModalBase>
   );
 }
 
