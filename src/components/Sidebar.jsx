@@ -21,7 +21,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
     {
       title: "General",
       items: [
-        { name: "Dashboard", icon: <Home size={18} />, path: "/dashboard", permission: "view-dashboard" },
+        { name: "Dashboard", icon: <Home size={18} />, path: "/dashboard" },
       ],
     },
     {

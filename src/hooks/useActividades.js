@@ -9,6 +9,8 @@ import {
   deleteActividad,
   inscribirAdulto,
   desinscribirAdulto,
+  downloadAttendancePDF,
+  downloadInscritosExcel, // ⬅️ Importamos la función nueva
 } from "../api/services/actividadesService";
 
 export default function useActividades() {
@@ -207,6 +209,39 @@ export default function useActividades() {
     }
   };
 
+  const handleDownloadAttendance = async (actividad) => {
+    if (!actividad) return;
+    try {
+      const response = await downloadAttendancePDF(actividad.id);
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Lista_Asistencia_${actividad.nombre}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al descargar lista de asistencia:", error);
+    }
+  };
+
+  const handleDownloadExcel = async (actividadId) => {
+    if (!actividadId) return;
+    try {
+      const blob = await downloadInscritosExcel(actividadId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `actividad-${actividadId}-inscritos.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al descargar Excel:", error);
+    }
+  };
+
   return {
     actividades,
     tipos,
@@ -237,5 +272,7 @@ export default function useActividades() {
     setShowViewModal,
     setShowInscritosModal,
     setShowInscribirModal,
+    handleDownloadAttendance,
+    handleDownloadExcel, // ⬅️ Nuevo
   };
 }

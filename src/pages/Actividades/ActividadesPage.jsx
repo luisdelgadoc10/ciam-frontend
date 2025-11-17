@@ -1,5 +1,13 @@
 import { useState, useMemo } from "react";
-import { Calendar, Edit, Trash2, Eye, UserPlus, Users } from "lucide-react";
+import {
+  Calendar,
+  Edit,
+  Trash2,
+  Eye,
+  UserPlus,
+  Users,
+  FileCheck,
+} from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalActividad from "./components/ModalActividad";
 import ModalInscritos from "./components/ModalInscritos";
@@ -31,10 +39,12 @@ export default function ActividadesPage() {
     handleDesinscribir,
     handleFormChange,
     handleSubmit,
+    handleDownloadAttendance,
     setShowModal,
     setShowViewModal,
     setShowInscritosModal,
     setShowInscribirModal,
+    handleDownloadExcel,
   } = useActividades();
 
   const columns = useMemo(
@@ -90,6 +100,14 @@ export default function ActividadesPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
+            {/* Descargar lista de asistencia */}
+            <button
+              onClick={() => handleDownloadAttendance(info.row.original)}
+              className="text-indigo-600 hover:text-indigo-800 transition"
+              title="Descargar Lista de Asistencia"
+            >
+              <FileCheck className="w-4 h-4" />
+            </button>
             <button
               onClick={() => handleView(info.row.original)}
               className="text-blue-600 hover:text-blue-800 transition"
@@ -129,7 +147,7 @@ export default function ActividadesPage() {
         ),
       },
     ],
-    [handleView, handleVerInscritos, handleInscribir, handleEdit, handleDelete]
+    [handleView, handleVerInscritos, handleInscribir, handleEdit, handleDelete, handleDownloadAttendance]
   );
 
   return (
@@ -187,6 +205,7 @@ export default function ActividadesPage() {
         onInscribir={handleInscribirAdulto}
         onDesinscribir={handleDesinscribir}
         modo={showInscribirModal ? "inscribir" : "ver"}
+        handleDownloadExcel={handleDownloadExcel}
       />
     </div>
   );

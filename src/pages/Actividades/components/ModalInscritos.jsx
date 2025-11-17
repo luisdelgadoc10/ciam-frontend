@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, UserPlus, UserMinus, Info } from "lucide-react";
+import { Users, UserPlus, UserMinus, Info, Download } from "lucide-react";
 import ModalBase from "../../../components/ui/ModalBase";
 import CustomTable from "../../../components/ui/CustomTable";
 
@@ -11,6 +11,7 @@ export default function ModalInscritos({
   adultosDisponibles = [],
   onInscribir,
   onDesinscribir,
+  handleDownloadExcel, // ✅ nueva prop
   modo = "ver", // "ver" o "inscribir"
 }) {
   const lista = modo === "ver" ? inscritos : adultosDisponibles;
@@ -48,12 +49,24 @@ export default function ModalInscritos({
   ];
 
   const title = (
-    <span className="flex items-center gap-2">
-      <Users className="w-6 h-6 text-blue-700 dark:text-blue-400" />
-      {modo === "ver"
-        ? `Inscritos en: ${actividad?.nombre || "—"}`
-        : `Inscribir en: ${actividad?.nombre || "—"}`}
-    </span>
+    <div className="flex items-center justify-between w-full">
+      <span className="flex items-center gap-2">
+        <Users className="w-6 h-6 text-blue-700 dark:text-blue-400" />
+        {modo === "ver"
+          ? `Inscritos en: ${actividad?.nombre || "—"}`
+          : `Inscribir en: ${actividad?.nombre || "—"}`}
+      </span>
+
+      {modo === "ver" && actividad?.id && handleDownloadExcel && (
+        <button
+          onClick={() => handleDownloadExcel(actividad.id)}
+          className="flex items-center gap-1 ml-4 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md shadow-sm hover:shadow-md transition-all duration-200 text-sm"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Excel de Inscritos
+        </button>
+      )}
+    </div>
   );
 
   const renderBody = () => {

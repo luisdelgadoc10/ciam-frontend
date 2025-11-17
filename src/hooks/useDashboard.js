@@ -1,42 +1,39 @@
 // src/hooks/useDashboard.js
 import { useState, useEffect } from "react";
-import {
-  getDashboardStats,
-  getDashboardActivities,
-  getDashboardUsers,
-} from "../api/services/dashboardService";
+import { getDashboardStats } from "../api/services/dashboardService";
 
 export default function useDashboard() {
   const [stats, setStats] = useState(null);
-  const [activities, setActivities] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [kpis, setKpis] = useState(null);
+  const [proximosCumpleanos, setProximosCumpleanos] = useState([]);
+  const [graficos, setGraficos] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchDashboard = async () => {
       try {
-        const [statsData, activitiesData, usersData] = await Promise.all([
-          getDashboardStats(),
-          getDashboardActivities(),
-          getDashboardUsers(),
-        ]);
+        const data = await getDashboardStats();
+
+        // SETEAMOS TODA LA DATA DEL ENDPOINT
+        setStats(data);
+        setKpis(data.kpis);
+        setProximosCumpleanos(data.proximos_cumpleanos || []);
+        setGraficos(data.graficos || {});
       } catch (error) {
-        console.error(
-          "Error al cargar dashboard:",
-          error.config.url,
-          error.response?.status,
-          error.message
-        );
+        console.error("Error al cargar dashboard:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchAll();
+    fetchDashboard();
   }, []);
 
   return {
     stats,
-    activities,
-    users,
+    kpis,
+    proximosCumpleanos,
+    graficos,
     loading,
   };
 }
