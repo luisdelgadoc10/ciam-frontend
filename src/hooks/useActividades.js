@@ -281,8 +281,20 @@ export default function useActividades() {
     setShowInscritosModal(false);
   };
 
+  // Descargar PDF con ConfirmModal 'info'
   const handleDownloadAttendance = async (actividad) => {
     if (!actividad) return;
+
+    const confirmed = await ask({
+      title: "Descargar PDF",
+      message: `¿Deseas descargar la lista de asistencia de "${actividad.nombre}" en PDF?`,
+      confirmText: "Descargar",
+      cancelText: "Cancelar",
+      variant: "info",
+    });
+
+    if (!confirmed) return;
+
     try {
       const response = await downloadAttendancePDF(actividad.id);
       const blob = new Blob([response.data], { type: "application/pdf" });
@@ -299,14 +311,26 @@ export default function useActividades() {
     }
   };
 
-  const handleDownloadExcel = async (actividadId) => {
-    if (!actividadId) return;
+  // Descargar Excel con ConfirmModal 'info'
+  const handleDownloadExcel = async (actividad) => {
+    if (!actividad) return;
+
+    const confirmed = await ask({
+      title: "Descargar Excel",
+      message: `¿Deseas descargar la lista de inscritos de "${actividad.nombre}" en Excel?`,
+      confirmText: "Descargar",
+      cancelText: "Cancelar",
+      variant: "info",
+    });
+
+    if (!confirmed) return;
+
     try {
-      const blob = await downloadInscritosExcel(actividadId);
+      const blob = await downloadInscritosExcel(actividad.id);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `actividad-${actividadId}-inscritos.xlsx`);
+      link.setAttribute("download", `Lista_Inscritos_${actividad.nombre}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();

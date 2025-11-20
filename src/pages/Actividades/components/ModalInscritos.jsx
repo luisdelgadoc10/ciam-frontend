@@ -59,7 +59,7 @@ export default function ModalInscritos({
 
       {modo === "ver" && actividad?.id && handleDownloadExcel && (
         <button
-          onClick={() => handleDownloadExcel(actividad.id)}
+          onClick={() => handleDownloadExcel(actividad)}
           className="flex items-center gap-1 ml-4 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md shadow-sm hover:shadow-md transition-all duration-200 text-sm"
         >
           <Download className="w-3.5 h-3.5" />

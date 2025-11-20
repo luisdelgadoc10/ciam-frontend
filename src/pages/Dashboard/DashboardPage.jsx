@@ -104,27 +104,18 @@ export default function Dashboard() {
               return (
                 <div
                   key={item.id}
-                  className="
-    group relative bg-white/60 backdrop-blur-xl 
-    border border-white/40 
-    rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.08)]
-    hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]
-    transition-all duration-300 overflow-hidden
-    hover:-translate-y-1
-  "
+                  className="group relative flex bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] transition-all duration-300 overflow-hidden"
                 >
-                  {/* Banda superior moderna */}
+                  {/* Banda superior azul */}
                   <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
 
-                  {/* FOTO */}
-                  <div className="relative h-52 overflow-hidden">
+                  {/* FOTO con bordes redondeados solo a la izquierda */}
+                  <div className="w-36 h-full flex-shrink-0 relative overflow-hidden rounded-l-3xl">
                     {item.foto ? (
                       <img
                         src={item.foto}
                         alt={item.nombre_completo}
-                        className="
-          w-full h-full object-cover 
-          group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center text-gray-400">
@@ -132,46 +123,22 @@ export default function Dashboard() {
                         <p className="text-xs mt-1">Sin foto</p>
                       </div>
                     )}
-
-                    {/* Overlay + Glow */}
-                    <div
-                      className="
-      absolute inset-0 bg-gradient-to-t 
-      from-black/40 via-black/10 to-transparent
-    "
-                    ></div>
-
-                    <div
-                      className="
-      absolute inset-0 pointer-events-none 
-      shadow-[inset_0_0_30px_rgba(0,102,255,0.25)]
-    "
-                    ></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                   </div>
 
-                  {/* CONTENIDO */}
-                  <div className="p-5">
-                    {/* Nombre */}
-                    <h3 className="text-xl font-semibold text-gray-900 leading-tight mb-1 group-hover:text-blue-700 transition-colors">
+                  {/* Contenido */}
+                  <div className="flex-1 p-5 flex flex-col justify-center">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
                       {item.nombre_completo}
                     </h3>
 
-                    {/* Fecha elegante */}
-                    <div className="flex items-center gap-2 mt-2 mb-1">
-                      <div
-                        className="
-        px-3 py-1.5 
-        bg-blue-50 text-blue-700 
-        rounded-lg font-semibold shadow-sm 
-        border border-blue-200
-      "
-                      >
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg font-semibold shadow-sm border border-blue-200">
                         {fechaCorta}
                       </div>
                       <Cake className="w-5 h-5 text-blue-500" />
                     </div>
 
-                    {/* Edad */}
                     <p className="text-gray-600 text-sm mt-1">
                       Cumple{" "}
                       <span className="font-semibold text-gray-800">
