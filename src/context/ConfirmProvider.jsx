@@ -17,6 +17,9 @@ export function ConfirmProvider({ children }) {
         message={confirmState.message}
         onConfirm={confirmState.onConfirm}
         onCancel={close}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant} // dinámico
       />
     </ConfirmContext.Provider>
   );

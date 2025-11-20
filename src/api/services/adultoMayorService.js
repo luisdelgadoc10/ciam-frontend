@@ -24,6 +24,12 @@ export const updateAdultoMayor = (id, formData) =>
 export const deleteAdultoMayor = (id) =>
   axiosClient.delete(`/adultoMayor/${id}`);
 
+// 🎂 Endpoint de cumpleaños (trae TODOS los registros sin paginación)
+export const getCumpleanos = (mes = null) => {
+  const url = mes ? `/adultoMayor/cumpleanos?mes=${mes}` : '/adultoMayor/cumpleanos';
+  return axiosClient.get(url);
+};
+
 // Catálogos
 export const getSexos = () => axiosClient.get("/sexos");
 export const getEstadosCiviles = () => axiosClient.get("/estados-civiles");

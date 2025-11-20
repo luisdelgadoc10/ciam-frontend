@@ -3,32 +3,40 @@ import { useState } from "react";
 export default function useConfirm() {
   const [confirmState, setConfirmState] = useState({
     isOpen: false,
-    message: "",
     title: "",
+    message: "",
+    confirmText: "Confirmar",
+    cancelText: "Cancelar",
     onConfirm: null,
+    variant: "info", // 'error', 'success', 'warning', 'info'
   });
 
-  // Abrir el modal
-  const ask = ({ title, message }) =>
-    new Promise((resolve) => {
+  const ask = ({
+    title,
+    message,
+    confirmText = "Confirmar",
+    cancelText = "Cancelar",
+    variant = "info",
+  }) => {
+    return new Promise((resolve) => {
       setConfirmState({
         isOpen: true,
         title,
         message,
+        confirmText,
+        cancelText,
+        variant,
         onConfirm: () => {
           resolve(true);
-          close();
+          setConfirmState((prev) => ({ ...prev, isOpen: false }));
         },
       });
     });
-
-  // Cerrar modal
-  const close = () =>
-    setConfirmState((prev) => ({ ...prev, isOpen: false }));
-
-  return {
-    confirmState,
-    ask,
-    close,
   };
+
+  const close = () => {
+    setConfirmState((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  return { confirmState, ask, close };
 }

@@ -8,6 +8,7 @@ import {
   getSexos,
   getEstadosCiviles,
   getParentescos,
+  getCumpleanos, // 🆕 Importar función de cumpleaños
 } from "../api/services/adultoMayorService";
 
 import { useConfirmDialog } from "../context/ConfirmProvider";
@@ -27,7 +28,7 @@ export default function useAdultosMayores() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // 🆕 Estados para paginación
+  // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -53,7 +54,7 @@ export default function useAdultosMayores() {
 
   useEffect(() => {
     fetchAll();
-  }, [currentPage, perPage]); // 🆕 Recargar cuando cambie la página o perPage
+  }, [currentPage, perPage]);
 
   const fetchAll = async () => {
     await Promise.all([
@@ -64,7 +65,6 @@ export default function useAdultosMayores() {
     ]);
   };
 
-  // 🆕 Función mejorada con paginación
   const fetchAdultosMayores = async () => {
     try {
       setLoading(true);
@@ -73,7 +73,6 @@ export default function useAdultosMayores() {
       const list = data.data || [];
       setAdultosMayores(Array.isArray(list) ? list : []);
       
-      // 🆕 Guardar información de paginación
       setLastPage(data.last_page || 1);
       setTotal(data.total || 0);
       setCurrentPage(data.current_page || 1);
@@ -82,6 +81,21 @@ export default function useAdultosMayores() {
       console.error("Error al cargar adultos mayores:", error);
       toast.error("Error al cargar adultos mayores");
       setAdultosMayores([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 Función para obtener TODOS los cumpleaños (sin paginación)
+  const fetchTodosCumpleanos = async (mes = null) => {
+    try {
+      setLoading(true);
+      const { data } = await getCumpleanos(mes);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Error al cargar cumpleaños:", error);
+      toast.error("Error al cargar cumpleaños");
+      return [];
     } finally {
       setLoading(false);
     }
@@ -197,6 +211,7 @@ export default function useAdultosMayores() {
       message: "¿Está seguro de eliminar este registro?",
       confirmText: "Eliminar",
       cancelText: "Cancelar",
+      variant: "error",
     });
 
     if (!confirmed) return;
@@ -283,7 +298,6 @@ export default function useAdultosMayores() {
     }
   };
 
-  // 🆕 Funciones de paginación
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= lastPage) {
       setCurrentPage(newPage);
@@ -292,7 +306,7 @@ export default function useAdultosMayores() {
 
   const handlePerPageChange = (newPerPage) => {
     setPerPage(newPerPage);
-    setCurrentPage(1); // Volver a la primera página
+    setCurrentPage(1);
   };
 
   return {
@@ -307,7 +321,6 @@ export default function useAdultosMayores() {
     showModal,
     showViewModal,
     isEditing,
-    // 🆕 Datos de paginación
     currentPage,
     lastPage,
     total,
@@ -320,8 +333,8 @@ export default function useAdultosMayores() {
     handleSubmit,
     setShowModal,
     setShowViewModal,
-    // 🆕 Funciones de paginación
     handlePageChange,
     handlePerPageChange,
+    fetchTodosCumpleanos, // 🆕 Exportar función de cumpleaños
   };
 }

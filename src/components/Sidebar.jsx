@@ -36,8 +36,14 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }) {
       items: [
         { name: "Beneficiarios", icon: <UserPlus size={18} />, path: "/beneficiarios", permission: "view-beneficiarios" },
         { name: "Actividades", icon: <SquareActivity size={18} />, path: "/actividades", permission: "view-actividades" },
-        { name: "Asistencias", icon: <CalendarCheck size={18} />, path: "/asistencias", permission: "view-asistencias" },
-        { name: "Calendario", icon: <CalendarDays size={18} />, path: "/calendario", permission: "view-calendario" },
+        { name: "Asistencias", icon: <CalendarCheck size={18} />, path: "/asistencias", permission: "view-asistencias" },       
+      ],
+    },
+    {
+      title: "Calendarios",
+      items: [        
+        { name: "Calendario Actividades", icon: <CalendarDays size={18} />, path: "/calendario", permission: "view-calendario" },
+        { name: "Cumpleaños", icon: <CalendarDays size={18} />, path: "/cumpleaños", permission: "view-cumpleaños" },
       ],
     },
   ];

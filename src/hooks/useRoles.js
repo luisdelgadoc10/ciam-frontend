@@ -81,6 +81,9 @@ export default function useRoles() {
     const confirmed = await ask({
       title: "Eliminar rol",
       message: "¿Deseas eliminar este rol? Esta acción no se puede deshacer.",
+      variant: "error",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
     });
 
     if (!confirmed) return;

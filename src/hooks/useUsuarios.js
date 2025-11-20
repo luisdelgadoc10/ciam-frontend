@@ -130,6 +130,9 @@ export default function useUsuarios() {
       title: "Eliminar usuario",
       message:
         "¿Deseas eliminar este usuario? Esta acción no se puede deshacer.",
+      variant: "error",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
     });
 
     if (!confirmed) return;

@@ -31,7 +31,7 @@ export default function useActividades() {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage] = useState(15); // El API siempre usa 15, no se puede cambiar
+  const [perPage] = useState(15);
 
   const [selectedActividad, setSelectedActividad] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,22 +59,18 @@ export default function useActividades() {
 
   useEffect(() => {
     fetchAll();
-  }, [currentPage, perPage]); // 🆕 Recargar cuando cambie la página
+  }, [currentPage, perPage]);
 
   const fetchAll = async () => {
     await Promise.all([fetchActividades(), fetchTipos(), fetchAdultos()]);
   };
 
-  // 🆕 Función mejorada con paginación
   const fetchActividades = async () => {
     setLoading(true);
     try {
       const { data } = await getActividades(currentPage, perPage);
-
       const list = data.data || [];
       setActividades(Array.isArray(list) ? list : []);
-
-      // 🆕 Guardar información de paginación
       setLastPage(data.last_page || 1);
       setTotal(data.total || 0);
       setCurrentPage(data.current_page || 1);
@@ -198,6 +194,7 @@ export default function useActividades() {
     setShowModal(true);
   };
 
+  // 🆕 Aquí usamos variant 'error' para eliminar
   const handleDelete = async (id) => {
     const confirmed = await ask({
       title: "Eliminar actividad",
@@ -205,6 +202,7 @@ export default function useActividades() {
         "¿Deseas eliminar esta actividad? Esta acción no se puede deshacer.",
       confirmText: "Eliminar",
       cancelText: "Cancelar",
+      variant: "error",
     });
 
     if (!confirmed) return;
@@ -219,6 +217,7 @@ export default function useActividades() {
     }
   };
 
+  // 🆕 Aquí usamos variant 'success' para inscribir
   const handleInscribirAdulto = async (adultoId) => {
     if (!selectedActividad) return;
 
@@ -227,6 +226,7 @@ export default function useActividades() {
       message: "¿Deseas inscribir este adulto a la actividad?",
       confirmText: "Inscribir",
       cancelText: "Cancelar",
+      variant: "success",
     });
 
     if (!confirmed) return;
@@ -242,6 +242,7 @@ export default function useActividades() {
     }
   };
 
+  // 🆕 Aquí usamos variant 'warning' para desinscribir
   const handleDesinscribir = async (adultoId) => {
     if (!selectedActividad) return;
 
@@ -250,6 +251,7 @@ export default function useActividades() {
       message: "¿Deseas desinscribir este adulto de la actividad?",
       confirmText: "Desinscribir",
       cancelText: "Cancelar",
+      variant: "warning",
     });
 
     if (!confirmed) return;
@@ -316,7 +318,7 @@ export default function useActividades() {
     }
   };
 
-  // 🆕 Funciones de paginación
+  // Funciones de paginación
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= lastPage) {
       setCurrentPage(newPage);
@@ -336,7 +338,6 @@ export default function useActividades() {
     adultosDisponibles,
     loading,
 
-    // 🆕 Datos de paginación
     currentPage,
     lastPage,
     total,
@@ -370,7 +371,6 @@ export default function useActividades() {
     handleDownloadAttendance,
     handleDownloadExcel,
 
-    // 🆕 Funciones de paginación
     handlePageChange,
     handlePerPageChange,
   };

@@ -40,7 +40,6 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-
       {/* ================= KPIS ================= */}
       <section className="mb-10">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -105,38 +104,77 @@ export default function Dashboard() {
               return (
                 <div
                   key={item.id}
-                  className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+                  className="
+    group relative bg-white/60 backdrop-blur-xl 
+    border border-white/40 
+    rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+    hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]
+    transition-all duration-300 overflow-hidden
+    hover:-translate-y-1
+  "
                 >
-                  <div className="h-48 bg-gray-100 flex items-center justify-center">
+                  {/* Banda superior moderna */}
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+
+                  {/* FOTO */}
+                  <div className="relative h-52 overflow-hidden">
                     {item.foto ? (
                       <img
                         src={item.foto}
                         alt={item.nombre_completo}
-                        className="w-full h-full object-cover"
+                        className="
+          w-full h-full object-cover 
+          group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="text-center">
-                        <UserRound className="w-10 h-10 text-gray-400 mx-auto" />
-                        <p className="text-xs text-gray-500">Sin foto</p>
+                      <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                        <UserRound className="w-12 h-12 opacity-60" />
+                        <p className="text-xs mt-1">Sin foto</p>
                       </div>
                     )}
+
+                    {/* Overlay + Glow */}
+                    <div
+                      className="
+      absolute inset-0 bg-gradient-to-t 
+      from-black/40 via-black/10 to-transparent
+    "
+                    ></div>
+
+                    <div
+                      className="
+      absolute inset-0 pointer-events-none 
+      shadow-[inset_0_0_30px_rgba(0,102,255,0.25)]
+    "
+                    ></div>
                   </div>
 
+                  {/* CONTENIDO */}
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {/* Nombre */}
+                    <h3 className="text-xl font-semibold text-gray-900 leading-tight mb-1 group-hover:text-blue-700 transition-colors">
                       {item.nombre_completo}
                     </h3>
 
-                    <div className="flex items-center gap-2 mb-2">
-                      <Cake className="w-5 h-5 text-blue-600" />
-                      <span className="text-xl font-bold text-blue-700">
+                    {/* Fecha elegante */}
+                    <div className="flex items-center gap-2 mt-2 mb-1">
+                      <div
+                        className="
+        px-3 py-1.5 
+        bg-blue-50 text-blue-700 
+        rounded-lg font-semibold shadow-sm 
+        border border-blue-200
+      "
+                      >
                         {fechaCorta}
-                      </span>
+                      </div>
+                      <Cake className="w-5 h-5 text-blue-500" />
                     </div>
 
-                    <p className="text-gray-600 text-sm">
+                    {/* Edad */}
+                    <p className="text-gray-600 text-sm mt-1">
                       Cumple{" "}
-                      <span className="font-medium">
+                      <span className="font-semibold text-gray-800">
                         {item.edad_a_cumplir}
                       </span>{" "}
                       años
@@ -151,10 +189,11 @@ export default function Dashboard() {
 
       {/* ================= GRÁFICOS ================= */}
       <section>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Análisis Visual</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Análisis Visual
+        </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
-
           {/* ------ SEXO ------ */}
           <ChartCard title="Distribución por Sexo" icon={<BarChart3 />}>
             <ResponsiveContainer width="100%" height={260}>
@@ -162,7 +201,11 @@ export default function Dashboard() {
                 <XAxis dataKey="nombre" tick={{ fill: "#6B7280" }} />
                 <YAxis tick={{ fill: "#6B7280" }} />
                 <RechartsTooltip />
-                <Bar dataKey="total" fill="url(#blueGrad)" radius={[6, 6, 0, 0]} />
+                <Bar
+                  dataKey="total"
+                  fill="url(#blueGrad)"
+                  radius={[6, 6, 0, 0]}
+                />
                 <defs>
                   <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#4F46E5" />
@@ -213,7 +256,11 @@ export default function Dashboard() {
                   <defs>
                     <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#A5B4FC" stopOpacity={0.1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#A5B4FC"
+                        stopOpacity={0.1}
+                      />
                     </linearGradient>
                   </defs>
                   <Line
@@ -221,7 +268,12 @@ export default function Dashboard() {
                     dataKey="total"
                     stroke="#4F46E5"
                     strokeWidth={2.5}
-                    dot={{ r: 4, fill: "#fff", stroke: "#4F46E5", strokeWidth: 2 }}
+                    dot={{
+                      r: 4,
+                      fill: "#fff",
+                      stroke: "#4F46E5",
+                      strokeWidth: 2,
+                    }}
                     activeDot={{ r: 6, fill: "#fff", stroke: "#4F46E5" }}
                   />
                 </LineChart>

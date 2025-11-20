@@ -14,6 +14,7 @@ import RolesPage from "../pages/Roles/RolesPage";
 import UsuariosPage from "../pages/Usuarios/UsuariosPage";
 import AsistenciasPage from "../pages/Asistencias/AttendancesPage";
 import ActividadesCalendarioPage from "../pages/Actividades/ActividadesCalendarioPage";
+import CumpleanosCalendarioPage from "../pages/Cumpleaños/CumpleanosCalendarioPage";
 
 import PrivateRoute from "./PrivateRoute";
 import ProfilePage from "../pages/Profile/ProfilePage";
@@ -97,6 +98,14 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <ActividadesCalendarioPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="cumpleaños"
+            element={
+              <PrivateRoute>
+                <CumpleanosCalendarioPage />
               </PrivateRoute>
             }
           />
