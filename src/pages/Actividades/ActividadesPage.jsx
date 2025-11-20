@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+// src/pages/Actividades/ActividadesPage.jsx
+import { useMemo } from "react";
 import {
   Calendar,
   Edit,
@@ -28,6 +29,11 @@ export default function ActividadesPage() {
     isEditing,
     formData,
     errors,
+    // 🆕 Datos de paginación
+    currentPage,
+    lastPage,
+    total,
+    perPage,
     fetchActividades,
     handleView,
     handleEdit,
@@ -45,6 +51,9 @@ export default function ActividadesPage() {
     setShowInscritosModal,
     setShowInscribirModal,
     handleDownloadExcel,
+    // 🆕 Funciones de paginación
+    handlePageChange,
+    handlePerPageChange,
   } = useActividades();
 
   const columns = useMemo(
@@ -65,12 +74,8 @@ export default function ActividadesPage() {
         cell: (info) => {
           let rawDate = info.getValue();
           if (!rawDate) return "-";
-
-          // quitar la Z al final si existe
           rawDate = rawDate.replace("Z", "");
-
           const date = new Date(rawDate);
-
           return date.toLocaleString("es-PE", {
             year: "numeric",
             month: "2-digit",
@@ -81,11 +86,6 @@ export default function ActividadesPage() {
           });
         },
       },
-      // {
-      //   accessorKey: "ubicacion",
-      //   header: "Ubicación",
-      //   cell: (info) => info.getValue(),
-      // },
       {
         accessorKey: "capacidad",
         header: "Capacidad",
@@ -100,7 +100,6 @@ export default function ActividadesPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-            {/* Descargar lista de asistencia */}
             <button
               onClick={() => handleDownloadAttendance(info.row.original)}
               className="text-indigo-600 hover:text-indigo-800 transition"
@@ -147,7 +146,14 @@ export default function ActividadesPage() {
         ),
       },
     ],
-    [handleView, handleVerInscritos, handleInscribir, handleEdit, handleDelete, handleDownloadAttendance]
+    [
+      handleView,
+      handleVerInscritos,
+      handleInscribir,
+      handleEdit,
+      handleDelete,
+      handleDownloadAttendance,
+    ]
   );
 
   return (
@@ -167,8 +173,20 @@ export default function ActividadesPage() {
         </button>
       </div>
 
-      {/* Tabla */}
-      <CustomTable data={actividades} columns={columns} searchable={true} />
+      {/* 🆕 Tabla con paginación del servidor */}
+      <CustomTable
+        data={actividades}
+        columns={columns}
+        searchable={true}
+        serverPagination={true}
+        currentPage={currentPage}
+        lastPage={lastPage}
+        total={total}
+        perPage={perPage}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
+        loading={loading}
+      />
 
       {/* Modal de Actividad (crear/editar) */}
       <ModalActividad

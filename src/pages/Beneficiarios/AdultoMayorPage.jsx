@@ -19,6 +19,11 @@ export default function AdultoMayorPage() {
     showModal,
     showViewModal,
     isEditing,
+    // 🆕 Datos de paginación
+    currentPage,
+    lastPage,
+    total,
+    perPage,
     handleCreate,
     handleEdit,
     handleView,
@@ -27,6 +32,9 @@ export default function AdultoMayorPage() {
     handleSubmit,
     setShowModal,
     setShowViewModal,
+    // 🆕 Funciones de paginación
+    handlePageChange,
+    handlePerPageChange,
   } = useAdultosMayores();
 
   const columns = useMemo(
@@ -100,6 +108,10 @@ export default function AdultoMayorPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Adultos Mayores</h1>
           <p className="text-gray-600">Gestión de beneficiarios del CIAM</p>
+          {/* 🆕 Mostrar total de registros */}
+          <p className="text-sm text-gray-500 mt-1">
+            Total de registros: {total}
+          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -111,7 +123,19 @@ export default function AdultoMayorPage() {
       </div>
 
       {/* Tabla */}
-      <CustomTable data={adultosMayores} columns={columns} searchable={true} />
+      <CustomTable
+        data={adultosMayores}
+        columns={columns}
+        searchable={true}
+        serverPagination={true}
+        currentPage={currentPage}
+        lastPage={lastPage}
+        total={total}
+        perPage={perPage}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
+        loading={loading}
+      />
 
       {/* Modal Crear/Editar */}
       <ModalAdultoForm

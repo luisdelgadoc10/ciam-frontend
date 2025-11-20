@@ -10,7 +10,13 @@ import {
   getParentescos,
 } from "../api/services/adultoMayorService";
 
+import { useConfirmDialog } from "../context/ConfirmProvider";
+import useToast from "../hooks/useToast";
+
 export default function useAdultosMayores() {
+  const { ask } = useConfirmDialog();
+  const toast = useToast();
+
   const [adultosMayores, setAdultosMayores] = useState([]);
   const [sexos, setSexos] = useState([]);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
@@ -20,6 +26,13 @@ export default function useAdultosMayores() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // 🆕 Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [perPage, setPerPage] = useState(15);
+  
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
@@ -34,13 +47,13 @@ export default function useAdultosMayores() {
     contacto_emergencia_telefono: "",
     parentesco_id: "",
     foto: null,
-    foto_url: null, // ✅ Para preview
+    foto_url: null,
   });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [currentPage, perPage]); // 🆕 Recargar cuando cambie la página o perPage
 
   const fetchAll = async () => {
     await Promise.all([
@@ -51,14 +64,23 @@ export default function useAdultosMayores() {
     ]);
   };
 
+  // 🆕 Función mejorada con paginación
   const fetchAdultosMayores = async () => {
     try {
       setLoading(true);
-      const { data } = await getAdultosMayores();
-      const list = data.data || data;
+      const { data } = await getAdultosMayores(currentPage, perPage);
+      
+      const list = data.data || [];
       setAdultosMayores(Array.isArray(list) ? list : []);
+      
+      // 🆕 Guardar información de paginación
+      setLastPage(data.last_page || 1);
+      setTotal(data.total || 0);
+      setCurrentPage(data.current_page || 1);
+      
     } catch (error) {
       console.error("Error al cargar adultos mayores:", error);
+      toast.error("Error al cargar adultos mayores");
       setAdultosMayores([]);
     } finally {
       setLoading(false);
@@ -71,6 +93,7 @@ export default function useAdultosMayores() {
       setSexos(data);
     } catch (error) {
       console.error("Error al cargar sexos:", error);
+      toast.error("Error al cargar sexos");
     }
   };
 
@@ -80,6 +103,7 @@ export default function useAdultosMayores() {
       setEstadosCiviles(data);
     } catch (error) {
       console.error("Error al cargar estados civiles:", error);
+      toast.error("Error al cargar estados civiles");
     }
   };
 
@@ -89,12 +113,13 @@ export default function useAdultosMayores() {
       setParentescos(data);
     } catch (error) {
       console.error("Error al cargar parentescos:", error);
+      toast.error("Error al cargar parentescos");
     }
   };
 
   const handleCreate = () => {
     setIsEditing(false);
-    setSelectedAdulto(null); // ✅ Limpiar selección
+    setSelectedAdulto(null);
     setFormData({
       nombres: "",
       apellidos: "",
@@ -109,7 +134,7 @@ export default function useAdultosMayores() {
       contacto_emergencia_telefono: "",
       parentesco_id: "",
       foto: null,
-      foto_url: null, // ✅ Sin preview
+      foto_url: null,
     });
     setErrors({});
     setShowModal(true);
@@ -119,22 +144,16 @@ export default function useAdultosMayores() {
     setIsEditing(true);
     setSelectedAdulto(adulto);
 
-    // 🔍 DEBUG: Ver qué tiene el adulto
-    console.log("=== Adulto a editar ===", adulto);
-
-    // Construir URL completa si es necesario
     let fotoUrl =
       adulto.foto_url ||
       adulto.foto ||
       adulto.imagen ||
       adulto.imagen_url ||
       null;
+
     if (fotoUrl && !fotoUrl.startsWith("http")) {
-      // Si es una ruta relativa, construir URL completa
       fotoUrl = `https://ciam.api.munimoche.gob.pe${fotoUrl}`;
     }
-
-    console.log("📷 URL de foto construida:", fotoUrl);
 
     setFormData({
       nombres: adulto.nombres || "",
@@ -157,35 +176,39 @@ export default function useAdultosMayores() {
   };
 
   const handleView = (adulto) => {
-    // Construir URL completa para la foto como en el form
     let fotoUrl =
       adulto.foto_url ||
       adulto.foto ||
       adulto.imagen ||
       adulto.imagen_url ||
       null;
+
     if (fotoUrl && !fotoUrl.startsWith("http")) {
       fotoUrl = `https://ciam.api.munimoche.gob.pe/${fotoUrl}`;
     }
 
-    setSelectedAdulto({
-      ...adulto,
-      foto_url: fotoUrl,
-    });
+    setSelectedAdulto({ ...adulto, foto_url: fotoUrl });
     setShowViewModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar este adulto mayor?")) return;
+    const confirmed = await ask({
+      title: "Eliminar adulto mayor",
+      message: "¿Está seguro de eliminar este registro?",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
 
     try {
       setLoading(true);
       await deleteAdultoMayor(id);
       await fetchAdultosMayores();
-      alert("Adulto Mayor eliminado exitosamente");
+      toast.success("Adulto mayor eliminado correctamente");
     } catch (error) {
       console.error("Error al eliminar:", error);
-      alert("Error al eliminar el Adulto Mayor");
+      toast.error("No se pudo eliminar el registro");
     } finally {
       setLoading(false);
     }
@@ -223,69 +246,53 @@ export default function useAdultosMayores() {
     try {
       const fd = new FormData();
 
-      // Agregar todos los campos
       Object.entries(formData).forEach(([key, value]) => {
-        // Omitir foto_url (solo es para preview)
         if (key === "foto_url") return;
-
-        // 🔧 FIX: Si estamos editando y el DNI no cambió, no lo enviamos
         if (isEditing && key === "dni" && selectedAdulto?.dni === value) {
           return;
         }
 
         if (key === "foto") {
-          // Solo agregar si es un File real
-          if (value instanceof File) {
-            fd.append("foto", value);
-          }
-        } else {
-          // Solo agregar si tiene valor
-          if (value !== null && value !== undefined && value !== "") {
-            fd.append(key, value);
-          }
+          if (value instanceof File) fd.append("foto", value);
+        } else if (value !== "" && value !== null) {
+          fd.append(key, value);
         }
       });
 
       if (isEditing) {
-        // ✅ Actualizar
         fd.append("_method", "PUT");
-
-        // 🔍 DEBUG: Ver qué se está enviando
-        console.log("=== FormData a enviar ===");
-        for (let pair of fd.entries()) {
-          console.log(pair[0] + ": ", pair[1]);
-        }
-
         await updateAdultoMayor(selectedAdulto.id, fd);
-        alert("Adulto Mayor actualizado exitosamente");
+        toast.success("Registro actualizado correctamente");
       } else {
-        // ✅ Crear
         await createAdultoMayor(fd);
-        alert("Adulto Mayor registrado exitosamente");
+        toast.success("Adulto mayor registrado correctamente");
       }
 
       setShowModal(false);
       await fetchAdultosMayores();
     } catch (error) {
       if (error.response?.status === 422) {
-        // 🔍 DEBUG: Ver errores de validación
-        console.error("❌ Errores de validación:", error.response.data);
         setErrors(error.response.data.errors || {});
-
-        // Mostrar errores en alert
-        const errorMessages = Object.entries(error.response.data.errors || {})
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n");
-        alert(`Errores de validación:\n\n${errorMessages}`);
+        toast.warning("Hay errores en el formulario");
       } else {
-        alert(
-          `Error al ${isEditing ? "actualizar" : "registrar"} el Adulto Mayor`
-        );
+        toast.error("Ocurrió un error al guardar");
       }
-      console.error("Error completo:", error.response || error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // 🆕 Funciones de paginación
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= lastPage) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handlePerPageChange = (newPerPage) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1); // Volver a la primera página
   };
 
   return {
@@ -300,6 +307,11 @@ export default function useAdultosMayores() {
     showModal,
     showViewModal,
     isEditing,
+    // 🆕 Datos de paginación
+    currentPage,
+    lastPage,
+    total,
+    perPage,
     handleCreate,
     handleEdit,
     handleView,
@@ -308,5 +320,8 @@ export default function useAdultosMayores() {
     handleSubmit,
     setShowModal,
     setShowViewModal,
+    // 🆕 Funciones de paginación
+    handlePageChange,
+    handlePerPageChange,
   };
 }

@@ -106,13 +106,13 @@ export default function UsuariosPage() {
             >
               <Edit className="w-4 h-4" />
             </button>
-            <button
+            {/* <button
               onClick={() => handleResetPassword(info.row.original.id)}
               className="text-purple-600 hover:text-purple-800 transition"
               title="Resetear contraseña"
             >
               <Key className="w-4 h-4" />
-            </button>
+            </button> */}
             <button
               onClick={() => handleDelete(info.row.original.id)}
               className="text-red-600 hover:text-red-800 transition"

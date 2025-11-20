@@ -1,3 +1,4 @@
+// src/hooks/useActividades.js
 import { useState, useEffect, useMemo } from "react";
 import {
   getActividades,
@@ -10,15 +11,27 @@ import {
   inscribirAdulto,
   desinscribirAdulto,
   downloadAttendancePDF,
-  downloadInscritosExcel, // ⬅️ Importamos la función nueva
+  downloadInscritosExcel,
 } from "../api/services/actividadesService";
 
+import { useConfirmDialog } from "../context/ConfirmProvider";
+import useToast from "./useToast";
+
 export default function useActividades() {
+  const { ask } = useConfirmDialog();
+  const toast = useToast();
+
   const [actividades, setActividades] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [adultos, setAdultos] = useState([]);
   const [inscritos, setInscritos] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // 🆕 Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [perPage] = useState(15); // El API siempre usa 15, no se puede cambiar
 
   const [selectedActividad, setSelectedActividad] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -27,7 +40,6 @@ export default function useActividades() {
   const [showInscritosModal, setShowInscritosModal] = useState(false);
   const [showInscribirModal, setShowInscribirModal] = useState(false);
 
-  // 👇 NUEVO: Estado del formulario
   const [formData, setFormData] = useState({
     nombre: "",
     tipo_actividad_id: "",
@@ -47,38 +59,61 @@ export default function useActividades() {
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [currentPage, perPage]); // 🆕 Recargar cuando cambie la página
 
   const fetchAll = async () => {
     await Promise.all([fetchActividades(), fetchTipos(), fetchAdultos()]);
   };
 
+  // 🆕 Función mejorada con paginación
   const fetchActividades = async () => {
     setLoading(true);
     try {
-      const { data } = await getActividades();
-      setActividades(data.data || data);
+      const { data } = await getActividades(currentPage, perPage);
+
+      const list = data.data || [];
+      setActividades(Array.isArray(list) ? list : []);
+
+      // 🆕 Guardar información de paginación
+      setLastPage(data.last_page || 1);
+      setTotal(data.total || 0);
+      setCurrentPage(data.current_page || 1);
+    } catch (error) {
+      console.error("Error al cargar actividades:", error);
+      toast.error("No se pudieron cargar las actividades.");
+      setActividades([]);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchTipos = async () => {
-    const { data } = await getTiposActividades();
-    setTipos(data);
+    try {
+      const { data } = await getTiposActividades();
+      setTipos(data);
+    } catch {
+      toast.error("Error al cargar los tipos de actividad.");
+    }
   };
 
   const fetchAdultos = async () => {
-    const { data } = await getAdultosMayores();
-    setAdultos(data.data || data);
+    try {
+      const { data } = await getAdultosMayores();
+      setAdultos(data.data || data);
+    } catch {
+      toast.error("Error al cargar adultos mayores.");
+    }
   };
 
   const fetchInscritos = async (actividadId) => {
-    const { data } = await getInscritos(actividadId);
-    setInscritos(data.data || data);
+    try {
+      const { data } = await getInscritos(actividadId);
+      setInscritos(data.data || data);
+    } catch {
+      toast.error("Error al cargar inscritos.");
+    }
   };
 
-  // 👇 NUEVO: Resetear formulario
   const resetForm = () => {
     setFormData({
       nombre: "",
@@ -92,17 +127,14 @@ export default function useActividades() {
     setErrors({});
   };
 
-  // 👇 NUEVO: Manejar cambios en el formulario
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Limpiar error del campo cuando el usuario escribe
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
-  // 👇 NUEVO: Manejar submit del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -111,9 +143,12 @@ export default function useActividades() {
     try {
       if (isEditing && selectedActividad) {
         await updateActividad(selectedActividad.id, formData);
+        toast.success("Actividad actualizada correctamente.");
       } else {
         await createActividad(formData);
+        toast.success("Actividad creada correctamente.");
       }
+
       await fetchActividades();
       setShowModal(false);
       resetForm();
@@ -122,8 +157,10 @@ export default function useActividades() {
     } catch (error) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
+        toast.warning("Revise los campos del formulario.");
       } else {
         console.error("Error al guardar actividad:", error);
+        toast.error("Error al guardar actividad.");
       }
     } finally {
       setLoading(false);
@@ -137,7 +174,6 @@ export default function useActividades() {
 
   const handleEdit = (actividad) => {
     setSelectedActividad(actividad);
-    // 👇 Cargar datos en el formulario
     setFormData({
       nombre: actividad.nombre || "",
       tipo_actividad_id: actividad.tipo_actividad?.id?.toString() || "",
@@ -155,7 +191,6 @@ export default function useActividades() {
     setShowModal(true);
   };
 
-  // 👇 NUEVO: Abrir modal de crear
   const handleCreate = () => {
     resetForm();
     setIsEditing(false);
@@ -164,12 +199,69 @@ export default function useActividades() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Deseas eliminar esta actividad?")) return;
+    const confirmed = await ask({
+      title: "Eliminar actividad",
+      message:
+        "¿Deseas eliminar esta actividad? Esta acción no se puede deshacer.",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
+
     try {
       await deleteActividad(id);
-      fetchActividades();
+      await fetchActividades();
+      toast.success("Actividad eliminada.");
     } catch (error) {
       console.error("Error al eliminar actividad:", error);
+      toast.error("No se pudo eliminar.");
+    }
+  };
+
+  const handleInscribirAdulto = async (adultoId) => {
+    if (!selectedActividad) return;
+
+    const confirmed = await ask({
+      title: "Inscribir adulto",
+      message: "¿Deseas inscribir este adulto a la actividad?",
+      confirmText: "Inscribir",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await inscribirAdulto(selectedActividad.id, adultoId);
+      await fetchInscritos(selectedActividad.id);
+      await fetchActividades();
+      toast.success("Adulto inscrito correctamente.");
+    } catch (error) {
+      console.error("Error al inscribir adulto:", error);
+      toast.error("No se pudo inscribir.");
+    }
+  };
+
+  const handleDesinscribir = async (adultoId) => {
+    if (!selectedActividad) return;
+
+    const confirmed = await ask({
+      title: "Quitar inscripción",
+      message: "¿Deseas desinscribir este adulto de la actividad?",
+      confirmText: "Desinscribir",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await desinscribirAdulto(selectedActividad.id, adultoId);
+      await fetchInscritos(selectedActividad.id);
+      await fetchActividades();
+      toast.success("Adulto desinscrito.");
+    } catch (error) {
+      console.error("Error al desinscribir adulto:", error);
+      toast.error("No se pudo desinscribir.");
     }
   };
 
@@ -187,28 +279,6 @@ export default function useActividades() {
     setShowInscritosModal(false);
   };
 
-  const handleInscribirAdulto = async (adultoId) => {
-    if (!selectedActividad) return;
-    try {
-      await inscribirAdulto(selectedActividad.id, adultoId);
-      await fetchInscritos(selectedActividad.id);
-      await fetchActividades();
-    } catch (error) {
-      console.error("Error al inscribir adulto:", error);
-    }
-  };
-
-  const handleDesinscribir = async (adultoId) => {
-    if (!selectedActividad) return;
-    try {
-      await desinscribirAdulto(selectedActividad.id, adultoId);
-      await fetchInscritos(selectedActividad.id);
-      await fetchActividades();
-    } catch (error) {
-      console.error("Error al desinscribir adulto:", error);
-    }
-  };
-
   const handleDownloadAttendance = async (actividad) => {
     if (!actividad) return;
     try {
@@ -220,8 +290,10 @@ export default function useActividades() {
       link.download = `Lista_Asistencia_${actividad.nombre}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
+      toast.success("PDF descargado.");
     } catch (error) {
       console.error("Error al descargar lista de asistencia:", error);
+      toast.error("Error al descargar PDF.");
     }
   };
 
@@ -237,9 +309,23 @@ export default function useActividades() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      toast.success("Excel descargado.");
     } catch (error) {
       console.error("Error al descargar Excel:", error);
+      toast.error("Error al descargar Excel.");
     }
+  };
+
+  // 🆕 Funciones de paginación
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= lastPage) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handlePerPageChange = (newPerPage) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1);
   };
 
   return {
@@ -249,30 +335,43 @@ export default function useActividades() {
     inscritos,
     adultosDisponibles,
     loading,
+
+    // 🆕 Datos de paginación
+    currentPage,
+    lastPage,
+    total,
+    perPage,
+
     selectedActividad,
     isEditing,
     showModal,
     showViewModal,
     showInscritosModal,
     showInscribirModal,
-    formData, // 👈 NUEVO
-    errors, // 👈 NUEVO
+
+    formData,
+    errors,
+
     fetchActividades,
     handleView,
     handleEdit,
-    handleCreate, // 👈 NUEVO
+    handleCreate,
     handleDelete,
     handleVerInscritos,
     handleInscribir,
     handleInscribirAdulto,
     handleDesinscribir,
-    handleFormChange, // 👈 NUEVO
-    handleSubmit, // 👈 NUEVO
+    handleFormChange,
+    handleSubmit,
     setShowModal,
     setShowViewModal,
     setShowInscritosModal,
     setShowInscribirModal,
     handleDownloadAttendance,
-    handleDownloadExcel, // ⬅️ Nuevo
+    handleDownloadExcel,
+
+    // 🆕 Funciones de paginación
+    handlePageChange,
+    handlePerPageChange,
   };
 }

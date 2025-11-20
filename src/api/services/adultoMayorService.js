@@ -1,24 +1,28 @@
 // src/api/services/adultoMayorService.js
 import axiosClient from "../axiosClient";
 
-// Adultos Mayores
-export const getAdultosMayores = () => axiosClient.get("/adultoMayor");
-export const getAdultoMayor = (id) => axiosClient.get(`/adultoMayor/${id}`); // ✅ Corregido
+// 🆕 Adultos Mayores con paginación
+export const getAdultosMayores = (page = 1, perPage = 15) => 
+  axiosClient.get(`/adultoMayor?page=${page}&per_page=${perPage}`);
+
+export const getAdultoMayor = (id) => axiosClient.get(`/adultoMayor/${id}`);
+
 export const createAdultoMayor = (data) =>
   axiosClient.post("/adultoMayor", data, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
+
 export const updateAdultoMayor = (id, formData) =>
   axiosClient.post(`/adultoMayor/${id}`, formData, {
-    // ✅ Corregido
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
+
 export const deleteAdultoMayor = (id) =>
-  axiosClient.delete(`/adultoMayor/${id}`); // ✅ Corregido
+  axiosClient.delete(`/adultoMayor/${id}`);
 
 // Catálogos
 export const getSexos = () => axiosClient.get("/sexos");

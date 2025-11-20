@@ -8,7 +8,13 @@ import {
   assignPermissions,
 } from "../api/services/rolesService";
 
+import { useConfirmDialog } from "../context/ConfirmProvider";
+import { useToastContext } from "../context/ToastProvider"; // ⬅️ AÑADIDO
+
 export default function useRoles() {
+  const { ask } = useConfirmDialog();
+  const { success, error: toastError, warning } = useToastContext(); // ⬅️ TOASTS
+
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
@@ -16,7 +22,7 @@ export default function useRoles() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: "", permissions: [] }); // ← "permissions", no "permisos"
+  const [formData, setFormData] = useState({ name: "", permissions: [] });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -31,7 +37,7 @@ export default function useRoles() {
     try {
       setLoading(true);
       const { data } = await getRoles();
-      // La API ya devuelve: role.name y role.permissions (con "name" dentro)
+
       const list = Array.isArray(data) ? data : data.data || data;
       setRoles(list);
     } finally {
@@ -43,9 +49,10 @@ export default function useRoles() {
     try {
       const { data } = await getPermissions();
       const list = Array.isArray(data) ? data : data.data || data;
-      setPermissions(list); // Ya tiene .id y .name
+      setPermissions(list);
     } catch (error) {
       console.error("Error fetching permissions:", error);
+      toastError("No se pudieron cargar los permisos.");
     }
   };
 
@@ -58,39 +65,53 @@ export default function useRoles() {
   const handleEdit = (role) => {
     setIsEditing(true);
     setSelectedRole(role);
-    // Extrae los IDs de role.permissions
-    const permissionIds = role.permissions?.map(p => p.id) || [];
+
+    const permissionIds = role.permissions?.map((p) => p.id) || [];
     setFormData({ name: role.name, permissions: permissionIds });
+
     setShowModal(true);
   };
 
   const handleView = (role) => {
-    setSelectedRole(role); // role ya tiene .name y .permissions con .name
+    setSelectedRole(role);
     setShowViewModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("¿Deseas eliminar este rol?")) return;
-    await deleteRole(id);
-    fetchRoles();
+    const confirmed = await ask({
+      title: "Eliminar rol",
+      message: "¿Deseas eliminar este rol? Esta acción no se puede deshacer.",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await deleteRole(id);
+      await fetchRoles();
+      success("Rol eliminado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar rol:", error);
+      toastError("No se pudo eliminar el rol");
+    }
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
-  // Nuevo handler para checkboxes de permisos
   const handlePermissionChange = (permissionId, checked) => {
     setFormData((prev) => {
       const current = prev.permissions || [];
-      let updated;
-      if (checked) {
-        updated = [...current, permissionId];
-      } else {
-        updated = current.filter(id => id !== permissionId);
-      }
+      let updated = checked
+        ? [...current, permissionId]
+        : current.filter((id) => id !== permissionId);
+
       return { ...prev, permissions: updated };
     });
   };
@@ -102,23 +123,38 @@ export default function useRoles() {
 
     try {
       if (isEditing && selectedRole) {
+        // EDITAR
         await updateRole(selectedRole.id, { name: formData.name });
+
         if (formData.permissions?.length) {
-          await assignPermissions(selectedRole.id, { permissions: formData.permissions });
+          await assignPermissions(selectedRole.id, {
+            permissions: formData.permissions,
+          });
         }
+
+        success("Rol actualizado correctamente");
       } else {
+        // CREAR
         const { data } = await createRole({ name: formData.name });
+
         if (formData.permissions?.length && data?.id) {
-          await assignPermissions(data.id, { permissions: formData.permissions });
+          await assignPermissions(data.id, {
+            permissions: formData.permissions,
+          });
         }
+
+        success("Rol creado correctamente");
       }
+
       setShowModal(false);
-      fetchRoles();
+      await fetchRoles();
     } catch (error) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
+        toastError("Corrige los errores del formulario");
       } else {
         console.error("Error al guardar rol:", error);
+        toastError("No se pudo guardar el rol");
       }
     } finally {
       setLoading(false);
@@ -140,7 +176,7 @@ export default function useRoles() {
     handleView,
     handleDelete,
     handleFormChange,
-    handlePermissionChange, // ← Añadido
+    handlePermissionChange,
     handleSubmit,
     setShowModal,
     setShowViewModal,

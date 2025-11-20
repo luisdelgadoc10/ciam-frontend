@@ -14,7 +14,6 @@ import RolesPage from "../pages/Roles/RolesPage";
 import UsuariosPage from "../pages/Usuarios/UsuariosPage";
 import AsistenciasPage from "../pages/Asistencias/AttendancesPage";
 import ActividadesCalendarioPage from "../pages/Actividades/ActividadesCalendarioPage";
-import Profile from "../pages/Profile/ProfilePage";
 
 import PrivateRoute from "./PrivateRoute";
 import ProfilePage from "../pages/Profile/ProfilePage";

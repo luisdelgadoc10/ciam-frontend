@@ -5,6 +5,7 @@ import {
   BarChart3,
   PieChart as PieIcon,
   LineChart as LineIcon,
+  UserRound,
 } from "lucide-react";
 import {
   BarChart,
@@ -22,8 +23,7 @@ import {
 } from "recharts";
 import useDashboard from "../../hooks/useDashboard";
 
-// Paleta azul moderna (Tailwind + ajustes suaves)
-const COLORS = ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"]; // azul-800 → azul-200
+const COLORS = ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"];
 
 export default function Dashboard() {
   const { kpis, proximosCumpleanos, graficos, loading } = useDashboard();
@@ -32,120 +32,113 @@ export default function Dashboard() {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
-          <div className="w-8 h-8 rounded-full border-4 border-blue-200 border-t-blue-700 animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-600 font-medium">Cargando dashboard...</p>
+          <div className="w-8 h-8 rounded-full border-4 border-blue-300 border-t-blue-700 animate-spin mx-auto mb-3"></div>
+          <p className="text-gray-700 font-medium">Cargando dashboard...</p>
         </div>
       </div>
     );
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      {/* KPIS — Modernizado */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-5">
+
+      {/* ================= KPIS ================= */}
+      <section className="mb-10">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Estadísticas Generales
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           <KpiCard
             title="Adultos Mayores"
             value={kpis.total_adultos_mayores}
-            icon={<Users className="w-6 h-6 text-blue-700" />}
-            color="blue"
+            icon={<Users />}
           />
           <KpiCard
             title="Activos"
             value={kpis.adultos_activos}
-            icon={<Activity className="w-6 h-6 text-blue-600" />}
-            color="blue"
+            icon={<Activity />}
           />
           <KpiCard
             title="Fallecidos"
             value={kpis.adultos_fallecidos}
-            icon={<Users className="w-6 h-6 text-gray-500" />}
-            color="gray"
+            icon={<Users />}
+            gray
           />
           <KpiCard
             title="Asistencia Hoy"
             value={kpis.asistencia_hoy}
-            icon={<Users className="w-6 h-6 text-blue-600" />}
-            color="blue"
+            icon={<Users />}
           />
           <KpiCard
             title="Actividades Activas"
             value={kpis.actividades_activas}
-            icon={<Activity className="w-6 h-6 text-blue-700" />}
-            color="blue"
+            icon={<Activity />}
           />
         </div>
       </section>
 
-      {/* CUMPLEAÑOS — Horizontal, foto carnet + grid responsivo */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center gap-2">
+      {/* ================= CUMPLEAÑOS ================= */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
           <Cake className="text-blue-500" />
           Próximos Cumpleaños
         </h2>
 
         {proximosCumpleanos.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 py-12 text-center">
-            <Cake className="mx-auto w-10 h-10 text-gray-300 mb-3" />
-            <p className="text-gray-500">
+          <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200 py-14 text-center">
+            <Cake className="mx-auto w-12 h-12 text-gray-400 mb-3" />
+            <p className="text-gray-500 text-lg">
               No hay cumpleaños en los próximos 7 días.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {proximosCumpleanos.map((item) => {
-              // Formatear fecha a "DD MMM" (ej: "18 Nov")
               const fecha = new Date(item.dia_cumpleanos);
               const dia = String(fecha.getDate()).padStart(2, "0");
               const mes = fecha
                 .toLocaleString("es-ES", { month: "short" })
                 .replace(".", "");
-              const fechaCorta = `${dia} ${
-                mes.charAt(0).toUpperCase() + mes.slice(1)
-              }`;
+              const fechaCorta =
+                dia + " " + mes.charAt(0).toUpperCase() + mes.slice(1);
 
               return (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 flex flex-col"
+                  className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
                 >
-                  {/* Foto carnet arriba */}
-                  <div className="h-48 bg-gray-50 border-b border-gray-100 flex items-center justify-center">
-                    <div className="w-36 h-48 flex items-center justify-center">
-                      {item.foto ? (
-                        <img
-                          src={item.foto}
-                          alt={item.nombre_completo}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-center px-2">
-                          <UserRound className="w-8 h-8 mx-auto text-gray-400 mb-1" />
-                          <p className="text-xs text-gray-500">Sin foto</p>
-                        </div>
-                      )}
-                    </div>
+                  <div className="h-48 bg-gray-100 flex items-center justify-center">
+                    {item.foto ? (
+                      <img
+                        src={item.foto}
+                        alt={item.nombre_completo}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <UserRound className="w-10 h-10 text-gray-400 mx-auto" />
+                        <p className="text-xs text-gray-500">Sin foto</p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Datos debajo */}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-semibold text-gray-800 leading-tight mb-2">
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       {item.nombre_completo}
                     </h3>
 
-                    {/* ——— FECHA RESALTADA ——— */}
                     <div className="flex items-center gap-2 mb-2">
-                      <Cake className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      <span className="text-lg font-bold text-blue-700">
+                      <Cake className="w-5 h-5 text-blue-600" />
+                      <span className="text-xl font-bold text-blue-700">
                         {fechaCorta}
                       </span>
                     </div>
 
-                    <p className="text-sm text-gray-600">
+                    <p className="text-gray-600 text-sm">
                       Cumple{" "}
-                      <span className="font-medium">{item.edad_a_cumplir}</span>{" "}
+                      <span className="font-medium">
+                        {item.edad_a_cumplir}
+                      </span>{" "}
                       años
                     </p>
                   </div>
@@ -156,64 +149,32 @@ export default function Dashboard() {
         )}
       </section>
 
-      {/* GRÁFICOS — Diseño premium */}
+      {/* ================= GRÁFICOS ================= */}
       <section>
-        <h2 className="text-2xl font-bold text-gray-800 mb-5">
-          Análisis Visual
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Análisis Visual</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Distribución por Sexo */}
-          <ChartCard
-            title="Distribución por Sexo"
-            icon={<BarChart3 className="text-blue-700" />}
-          >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
+
+          {/* ------ SEXO ------ */}
+          <ChartCard title="Distribución por Sexo" icon={<BarChart3 />}>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart
-                data={graficos.distribucion_sexo}
-                margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
-              >
-                <XAxis
-                  dataKey="nombre"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "#4B5563" }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "#6B7280" }}
-                />
-                <RechartsTooltip
-                  contentStyle={{
-                    borderRadius: "0.75rem",
-                    border: "1px solid #E5E7EB",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                    backgroundColor: "white",
-                    fontSize: "0.875rem",
-                    padding: "0.75rem",
-                  }}
-                />
-                <Bar
-                  dataKey="total"
-                  fill="url(#blueGradient)"
-                  radius={[6, 6, 0, 0]}
-                />
+              <BarChart data={graficos.distribucion_sexo}>
+                <XAxis dataKey="nombre" tick={{ fill: "#6B7280" }} />
+                <YAxis tick={{ fill: "#6B7280" }} />
+                <RechartsTooltip />
+                <Bar dataKey="total" fill="url(#blueGrad)" radius={[6, 6, 0, 0]} />
                 <defs>
-                  <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#4F46E5" />
-                    <stop offset="100%" stopColor="#818CF8" />
+                    <stop offset="100%" stopColor="#A5B4FC" />
                   </linearGradient>
                 </defs>
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          {/* Rangos de Edad */}
-          <ChartCard
-            title="Rangos de Edad"
-            icon={<PieIcon className="text-blue-700" />}
-          >
+          {/* ------ RANGOS ------ */}
+          <ChartCard title="Rangos de Edad" icon={<PieIcon />}>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
@@ -222,44 +183,22 @@ export default function Dashboard() {
                   nameKey="rango_edad"
                   cx="50%"
                   cy="45%"
-                  outerRadius={70}
                   innerRadius={35}
+                  outerRadius={70}
                   paddingAngle={2}
                 >
                   {graficos.rangos_edad.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip
-                  formatter={(value) => [`${value} adultos`, "Cantidad"]}
-                  contentStyle={{
-                    borderRadius: "0.75rem",
-                    border: "1px solid #E5E7EB",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                    backgroundColor: "white",
-                    fontSize: "0.875rem",
-                    padding: "0.75rem",
-                  }}
-                />
-                <Legend
-                  layout="horizontal"
-                  verticalAlign="bottom"
-                  align="center"
-                  iconType="circle"
-                  formatter={(value) => (
-                    <span className="text-xs text-gray-600">{value}</span>
-                  )}
-                  wrapperStyle={{ paddingTop: "10px" }}
-                />
+                <RechartsTooltip />
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          {/* Asistencia Semanal */}
-          <ChartCard
-            title="Asistencia Semanal"
-            icon={<LineIcon className="text-blue-700" />}
-          >
+          {/* ------ ASISTENCIA ------ */}
+          <ChartCard title="Asistencia Semanal" icon={<LineIcon />}>
             {graficos.asistencia_semanal.length === 0 ? (
               <div className="h-56 flex flex-col items-center justify-center text-gray-400">
                 <LineIcon className="w-10 h-10 opacity-50 mb-2" />
@@ -267,68 +206,23 @@ export default function Dashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart
-                  data={graficos.asistencia_semanal}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
-                >
-                  <XAxis
-                    dataKey="dia"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#4B5563" }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#6B7280" }}
-                  />
-                  <RechartsTooltip
-                    contentStyle={{
-                      borderRadius: "0.75rem",
-                      border: "1px solid #E5E7EB",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                      backgroundColor: "white",
-                      fontSize: "0.875rem",
-                      padding: "0.75rem",
-                    }}
-                  />
+                <LineChart data={graficos.asistencia_semanal}>
+                  <XAxis dataKey="dia" tick={{ fill: "#6B7280" }} />
+                  <YAxis tick={{ fill: "#6B7280" }} />
+                  <RechartsTooltip />
                   <defs>
-                    <linearGradient
-                      id="lineGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.4} />
-                      <stop
-                        offset="95%"
-                        stopColor="#818CF8"
-                        stopOpacity={0.1}
-                      />
+                    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#A5B4FC" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
                   <Line
                     type="monotone"
                     dataKey="total"
                     stroke="#4F46E5"
-                    strokeWidth={3}
-                    strokeOpacity={1}
-                    dot={{
-                      r: 4,
-                      stroke: "#4F46E5",
-                      strokeWidth: 2,
-                      fill: "white",
-                      fillOpacity: 1,
-                    }}
-                    activeDot={{
-                      r: 6,
-                      stroke: "#4338CA",
-                      strokeWidth: 2,
-                      fill: "#FFFFFF",
-                    }}
-                    fill="url(#lineGradient)"
-                    fillOpacity={0.3}
+                    strokeWidth={2.5}
+                    dot={{ r: 4, fill: "#fff", stroke: "#4F46E5", strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: "#fff", stroke: "#4F46E5" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -340,21 +234,26 @@ export default function Dashboard() {
   );
 }
 
-// ========== COMPONENTES MEJORADOS ==========
-function KpiCard({ title, value, icon, color }) {
-  const bgColor = color === "blue" ? "bg-blue-50" : "bg-gray-50";
-  const iconColor = color === "blue" ? "text-blue-700" : "text-gray-500";
+/* ================= COMPONENTES MODERNOS ================= */
 
+function KpiCard({ title, value, icon, gray }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-start justify-between">
+    <div className="bg-white/70 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-5">
+      <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
-            {typeof value === "number" ? value.toLocaleString() : value ?? 0}
+          <p className="text-sm text-gray-500">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">
+            {value?.toLocaleString() || 0}
           </p>
         </div>
-        <div className={`p-3 rounded-xl ${bgColor} ${iconColor} flex-shrink-0`}>
+
+        <div
+          className={`p-3 rounded-xl ${
+            gray
+              ? "bg-gray-100 text-gray-500"
+              : "bg-gradient-to-br from-blue-600 to-blue-400 text-white"
+          } shadow-sm`}
+        >
           {icon}
         </div>
       </div>
@@ -364,9 +263,9 @@ function KpiCard({ title, value, icon, color }) {
 
 function ChartCard({ title, icon, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md duration-200">
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-        <span className="text-blue-700">{icon}</span>
+    <div className="bg-white/70 rounded-2xl backdrop-blur-xl border border-gray-200 shadow-md hover:shadow-xl transition-all overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
+        <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">{icon}</div>
         <h3 className="font-semibold text-gray-800">{title}</h3>
       </div>
       <div className="p-4">{children}</div>

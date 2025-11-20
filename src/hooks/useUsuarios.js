@@ -1,3 +1,4 @@
+// src/hooks/useUsuarios.js
 import { useState, useEffect } from "react";
 import {
   getUsuarios,
@@ -8,25 +9,32 @@ import {
 } from "../api/services/usuariosService";
 
 import { getRoles } from "../api/services/rolesService";
+import { useConfirmDialog } from "../context/ConfirmProvider";
+import { useToastContext } from "../context/ToastProvider";
 
 export default function useUsuarios() {
+  const { ask } = useConfirmDialog();
+  const { success, error: toastError, warning } = useToastContext();
+
   const [usuarios, setUsuarios] = useState([]);
-  const [roles, setRoles] = useState([]); // lista de roles disponibles
+  const [roles, setRoles] = useState([]);
   const [selectedUsuario, setSelectedUsuario] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
     email: "",
-    usuario: "", // agregar
-    fecha_de_nacimiento: "", // agregar
+    usuario: "",
+    fecha_de_nacimiento: "",
     password: "",
-    password_confirmation: "", // agregar si el backend lo requiere
+    password_confirmation: "",
     roles: [],
   });
+
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -40,7 +48,7 @@ export default function useUsuarios() {
   const fetchUsuarios = async () => {
     try {
       setLoading(true);
-      const result = await getUsuarios(); // ya procesado en el servicio
+      const result = await getUsuarios();
 
       let list;
       if (Array.isArray(result)) {
@@ -51,6 +59,7 @@ export default function useUsuarios() {
         console.error("Formato inesperado en usuarios:", result);
         list = [];
       }
+
       setUsuarios(list);
     } finally {
       setLoading(false);
@@ -59,7 +68,7 @@ export default function useUsuarios() {
 
   const fetchRolesList = async () => {
     try {
-      const { data } = await getRoles(); // sin procesar en el servicio
+      const { data } = await getRoles();
 
       let list;
       if (Array.isArray(data)) {
@@ -69,6 +78,7 @@ export default function useUsuarios() {
       } else {
         list = [];
       }
+
       setRoles(list);
     } catch (error) {
       console.error("Error fetching roles:", error);
@@ -81,7 +91,10 @@ export default function useUsuarios() {
       nombre: "",
       apellido: "",
       email: "",
+      usuario: "",
+      fecha_de_nacimiento: "",
       password: "",
+      password_confirmation: "",
       roles: [],
     });
     setShowModal(true);
@@ -91,41 +104,62 @@ export default function useUsuarios() {
     setIsEditing(true);
     setSelectedUsuario(usuario);
     const roleIds = usuario.roles?.map((r) => r.id) || [];
+
     setFormData({
       id: usuario.id,
       nombre: usuario.nombre || "",
       apellido: usuario.apellido || "",
       email: usuario.email || "",
-      password: "", // no se rellena al editar (solo si se quiere cambiar)
+      usuario: usuario.usuario || "",
+      fecha_de_nacimiento: usuario.fecha_de_nacimiento || "",
+      password: "",
+      password_confirmation: "",
       roles: roleIds,
     });
+
     setShowModal(true);
   };
 
   const handleView = (usuario) => {
-    setSelectedUsuario(usuario); // contiene roles como objetos con .name
+    setSelectedUsuario(usuario);
     setShowViewModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("¿Deseas eliminar este usuario?")) return;
+    const confirmed = await ask({
+      title: "Eliminar usuario",
+      message:
+        "¿Deseas eliminar este usuario? Esta acción no se puede deshacer.",
+    });
+
+    if (!confirmed) return;
+
     try {
       await deleteUsuario(id);
-      fetchUsuarios();
-    } catch (error) {
-      console.error("Error al eliminar usuario:", error);
+      await fetchUsuarios();
+      success("Usuario eliminado correctamente");
+    } catch (err) {
+      console.error("Error al eliminar usuario:", err);
+      toastError("No se pudo eliminar el usuario");
     }
   };
 
-  const handleResetPassword = (id) => {
-    alert(
-      `Resetear contraseña del usuario ID ${id} (pendiente de implementar)`
-    );
+  const handleResetPassword = async (id) => {
+    const confirmed = await ask({
+      title: "Reiniciar contraseña",
+      message:
+        "Se generará una nueva contraseña temporal para este usuario. ¿Continuar?",
+    });
+
+    if (!confirmed) return;
+
+    warning("Funcionalidad pendiente de implementación");
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -135,69 +169,73 @@ export default function useUsuarios() {
     setFormData((prev) => {
       const current = prev.roles || [];
       let updated;
+
       if (checked) {
         updated = [...current, roleId];
       } else {
         updated = current.filter((id) => id !== roleId);
       }
+
       return { ...prev, roles: updated };
     });
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setErrors({});
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
 
-  try {
-    // 🧠 Normalizar datos antes de enviar
-    const payload = {
-      nombre: formData.nombre,
-      apellido: formData.apellido,
-      email: formData.email,
-      usuario: formData.usuario,
-      fecha_de_nacimiento: formData.fecha_de_nacimiento,
-      password: formData.password || undefined,
-      password_confirmation: formData.password_confirmation || undefined,
-    };
+    try {
+      const payload = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        usuario: formData.usuario,
+        fecha_de_nacimiento: formData.fecha_de_nacimiento,
+        password: formData.password || undefined,
+        password_confirmation: formData.password_confirmation || undefined,
+      };
 
-    if (isEditing && selectedUsuario) {
-      // 1️⃣ Actualizar datos básicos del usuario
-      await updateUsuario(selectedUsuario.id, payload);
+      if (isEditing && selectedUsuario) {
+        // EDITAR
+        await updateUsuario(selectedUsuario.id, payload);
 
-      // 2️⃣ Asignar roles después de actualizar
-      if (formData.roles && formData.roles.length > 0) {
-        await assignRoles(selectedUsuario.id, formData.roles);
+        await assignRoles(
+          selectedUsuario.id,
+          formData.roles?.length ? formData.roles : []
+        );
+
+        success("Usuario actualizado correctamente");
       } else {
-        // Si no tiene roles seleccionados, enviar arreglo vacío para "revocar" roles
-        await assignRoles(selectedUsuario.id, []);
+        // CREAR
+        const nuevo = await createUsuario(payload);
+
+        if (formData.roles?.length > 0) {
+          await assignRoles(nuevo.id, formData.roles);
+        }
+
+        success("Usuario creado correctamente");
       }
 
-    } else {
-      // Crear nuevo usuario
-      const nuevo = await createUsuario(payload);
-      // Si se asignan roles al crear, también se hace aquí
-      if (formData.roles && formData.roles.length > 0) {
-        await assignRoles(nuevo.id, formData.roles);
+      setShowModal(false);
+      await fetchUsuarios();
+    } catch (err) {
+      console.error("Error al guardar usuario:", err);
+
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+        toastError("Hay errores en el formulario");
+      } else {
+        toastError("No se pudo guardar");
       }
+    } finally {
+      setLoading(false);
     }
-
-    setShowModal(false);
-    await fetchUsuarios();
-  } catch (error) {
-    console.error("Error al guardar usuario:", error);
-    if (error.response?.data?.errors) {
-      setErrors(error.response.data.errors);
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return {
     usuarios,
-    roles, // roles disponibles para el select/checkboxes
+    roles,
     selectedUsuario,
     formData,
     errors,
