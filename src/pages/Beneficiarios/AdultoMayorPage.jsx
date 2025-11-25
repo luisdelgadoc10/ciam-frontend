@@ -1,9 +1,10 @@
 // src/pages/Beneficiarios/AdultoMayorPage.jsx
 import { useMemo } from "react";
-import { UserPlus, Edit, Trash2, Eye } from "lucide-react";
+import { UserPlus, Edit, Trash2, Eye, QrCode } from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalAdultoForm from "./components/ModalAdultoForm";
 import ModalAdultoView from "./components/ModalAdultoView";
+import ModalCarnet from "./components/ModalCarnet"; // 🪪 Importar modal de carnet virtual
 import useAdultosMayores from "../../hooks/useAdultosMayores";
 
 export default function AdultoMayorPage() {
@@ -35,6 +36,11 @@ export default function AdultoMayorPage() {
     // 🆕 Funciones de paginación
     handlePageChange,
     handlePerPageChange,
+    // 🆕 CARNET VIRTUAL
+    showCarnetModal,
+    setShowCarnetModal,
+    carnetData,
+    fetchCarnet,
   } = useAdultosMayores();
 
   const columns = useMemo(
@@ -79,6 +85,13 @@ export default function AdultoMayorPage() {
               title="Ver detalles"
             >
               <Eye className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => fetchCarnet(info.row.original.id)}
+              className="text-green-600 hover:text-green-800 transition"
+              title="Carnet Virtual"
+            >
+              <QrCode className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleEdit(info.row.original)}
@@ -158,6 +171,12 @@ export default function AdultoMayorPage() {
         onClose={() => setShowViewModal(false)}
         adulto={selectedAdulto}
         onEdit={handleEdit}
+      />
+
+      <ModalCarnet
+        show={showCarnetModal}
+        onClose={() => setShowCarnetModal(false)}
+        carnet={carnetData}
       />
     </div>
   );

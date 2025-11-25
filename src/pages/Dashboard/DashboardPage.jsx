@@ -23,7 +23,7 @@ import {
 } from "recharts";
 import useDashboard from "../../hooks/useDashboard";
 
-const COLORS = ["#4F46E5", "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE"];
+const COLORS = ["#4F46E5", "#06B6D4", "#10B981", "#F59E0B", "#EF4444"];
 
 export default function Dashboard() {
   const { kpis, proximosCumpleanos, graficos, loading } = useDashboard();
@@ -39,13 +39,19 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      {/* ================= KPIS ================= */}
-      <section className="mb-10">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Estadísticas Generales
-        </h2>
+    <div className="space-y-10">
+      {/* HEADER — Igual que UsuariosPage */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Dashboard General
+          </h1>
+          <p className="text-gray-600">Resumen del sistema y estadísticas</p>
+        </div>
+      </div>
 
+      {/* ================= KPIS ================= */}
+      <section>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           <KpiCard
             title="Adultos Mayores"
@@ -77,14 +83,13 @@ export default function Dashboard() {
       </section>
 
       {/* ================= CUMPLEAÑOS ================= */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <Cake className="text-blue-500" />
-          Próximos Cumpleaños
+      <section>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Cake className="text-blue-500" /> Próximos Cumpleaños
         </h2>
 
         {proximosCumpleanos.length === 0 ? (
-          <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200 py-14 text-center">
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow">
             <Cake className="mx-auto w-12 h-12 text-gray-400 mb-3" />
             <p className="text-gray-500 text-lg">
               No hay cumpleaños en los próximos 7 días.
@@ -98,50 +103,45 @@ export default function Dashboard() {
               const mes = fecha
                 .toLocaleString("es-ES", { month: "short" })
                 .replace(".", "");
-              const fechaCorta =
-                dia + " " + mes.charAt(0).toUpperCase() + mes.slice(1);
+              const fechaCorta = `${dia} ${mes
+                .charAt(0)
+                .toUpperCase()}${mes.slice(1)}`;
 
               return (
                 <div
                   key={item.id}
-                  className="group relative flex bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] transition-all duration-300 overflow-hidden"
+                  className="group bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition overflow-hidden flex"
                 >
-                  {/* Banda superior azul */}
-                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
-
-                  {/* FOTO con bordes redondeados solo a la izquierda */}
-                  <div className="w-36 h-full flex-shrink-0 relative overflow-hidden rounded-l-3xl">
+                  {/* FOTO */}
+                  <div className="w-36 h-full overflow-hidden">
                     {item.foto ? (
                       <img
                         src={item.foto}
                         alt={item.nombre_completo}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                       />
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                      <div className="h-full flex items-center flex-col justify-center text-gray-400">
                         <UserRound className="w-12 h-12 opacity-60" />
                         <p className="text-xs mt-1">Sin foto</p>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                   </div>
 
-                  {/* Contenido */}
-                  <div className="flex-1 p-5 flex flex-col justify-center">
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                  {/* INFO */}
+                  <div className="flex-1 p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-700 transition">
                       {item.nombre_completo}
                     </h3>
-
                     <div className="flex items-center gap-2 mt-2">
                       <div className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg font-semibold shadow-sm border border-blue-200">
                         {fechaCorta}
                       </div>
                       <Cake className="w-5 h-5 text-blue-500" />
                     </div>
-
                     <p className="text-gray-600 text-sm mt-1">
                       Cumple{" "}
-                      <span className="font-semibold text-gray-800">
+                      <span className="font-semibold">
                         {item.edad_a_cumplir}
                       </span>{" "}
                       años
@@ -156,12 +156,12 @@ export default function Dashboard() {
 
       {/* ================= GRÁFICOS ================= */}
       <section>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Análisis Visual
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
-          {/* ------ SEXO ------ */}
+          {/* SEXO */}
           <ChartCard title="Distribución por Sexo" icon={<BarChart3 />}>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={graficos.distribucion_sexo}>
@@ -183,7 +183,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </ChartCard>
 
-          {/* ------ RANGOS ------ */}
+          {/* RANGOS */}
           <ChartCard title="Rangos de Edad" icon={<PieIcon />}>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -201,18 +201,18 @@ export default function Dashboard() {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <RechartsTooltip />
                 <Legend verticalAlign="bottom" height={36} />
+                <RechartsTooltip />
               </PieChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          {/* ------ ASISTENCIA ------ */}
+          {/* ASISTENCIA */}
           <ChartCard title="Asistencia Semanal" icon={<LineIcon />}>
             {graficos.asistencia_semanal.length === 0 ? (
-              <div className="h-56 flex flex-col items-center justify-center text-gray-400">
-                <LineIcon className="w-10 h-10 opacity-50 mb-2" />
-                <span className="text-sm">Sin datos esta semana</span>
+              <div className="h-56 flex items-center justify-center text-gray-400">
+                <LineIcon className="w-10 h-10 opacity-50" />
+                <p className="text-sm ml-3">Sin datos esta semana</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
@@ -220,16 +220,6 @@ export default function Dashboard() {
                   <XAxis dataKey="dia" tick={{ fill: "#6B7280" }} />
                   <YAxis tick={{ fill: "#6B7280" }} />
                   <RechartsTooltip />
-                  <defs>
-                    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.4} />
-                      <stop
-                        offset="100%"
-                        stopColor="#A5B4FC"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                  </defs>
                   <Line
                     type="monotone"
                     dataKey="total"
@@ -253,11 +243,10 @@ export default function Dashboard() {
   );
 }
 
-/* ================= COMPONENTES MODERNOS ================= */
-
+/* ================= COMPONENTES ================= */
 function KpiCard({ title, value, icon, gray }) {
   return (
-    <div className="bg-white/70 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-5">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow p-5 hover:shadow-lg transition">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm text-gray-500">{title}</p>
@@ -271,7 +260,7 @@ function KpiCard({ title, value, icon, gray }) {
             gray
               ? "bg-gray-100 text-gray-500"
               : "bg-gradient-to-br from-blue-600 to-blue-400 text-white"
-          } shadow-sm`}
+          }`}
         >
           {icon}
         </div>
@@ -282,7 +271,7 @@ function KpiCard({ title, value, icon, gray }) {
 
 function ChartCard({ title, icon, children }) {
   return (
-    <div className="bg-white/70 rounded-2xl backdrop-blur-xl border border-gray-200 shadow-md hover:shadow-xl transition-all overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200">
         <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">{icon}</div>
         <h3 className="font-semibold text-gray-800">{title}</h3>

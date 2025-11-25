@@ -27,11 +27,11 @@ export default function useActividades() {
   const [inscritos, setInscritos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🆕 Estados de paginación
+  // 🆕 Estados de paginación del servidor
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage] = useState(15);
+  const [perPage, setPerPage] = useState(10); // Default del servidor es 10
 
   const [selectedActividad, setSelectedActividad] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,23 +59,28 @@ export default function useActividades() {
 
   useEffect(() => {
     fetchAll();
-  }, [currentPage, perPage]);
+  }, [currentPage, perPage]); // Recargar cuando cambie la página o perPage
 
   const fetchAll = async () => {
     await Promise.all([fetchActividades(), fetchTipos(), fetchAdultos()]);
   };
 
+  // ✅ Función con paginación del servidor
   const fetchActividades = async () => {
     setLoading(true);
     try {
       const { data } = await getActividades(currentPage, perPage);
+
       const list = data.data || [];
       setActividades(Array.isArray(list) ? list : []);
+
+      // Guardar información de paginación del servidor
       setLastPage(data.last_page || 1);
       setTotal(data.total || 0);
       setCurrentPage(data.current_page || 1);
     } catch (error) {
-      console.error("Error al cargar actividades:", error);
+      console.error("❌ Error al cargar actividades:", error);
+      console.error("📋 Respuesta del servidor:", error.response?.data);
       toast.error("No se pudieron cargar las actividades.");
       setActividades([]);
     } finally {
@@ -194,7 +199,6 @@ export default function useActividades() {
     setShowModal(true);
   };
 
-  // 🆕 Aquí usamos variant 'error' para eliminar
   const handleDelete = async (id) => {
     const confirmed = await ask({
       title: "Eliminar actividad",
@@ -217,7 +221,6 @@ export default function useActividades() {
     }
   };
 
-  // 🆕 Aquí usamos variant 'success' para inscribir
   const handleInscribirAdulto = async (adultoId) => {
     if (!selectedActividad) return;
 
@@ -226,7 +229,6 @@ export default function useActividades() {
       message: "¿Deseas inscribir este adulto a la actividad?",
       confirmText: "Inscribir",
       cancelText: "Cancelar",
-      variant: "success",
     });
 
     if (!confirmed) return;
@@ -242,7 +244,6 @@ export default function useActividades() {
     }
   };
 
-  // 🆕 Aquí usamos variant 'warning' para desinscribir
   const handleDesinscribir = async (adultoId) => {
     if (!selectedActividad) return;
 
@@ -251,7 +252,6 @@ export default function useActividades() {
       message: "¿Deseas desinscribir este adulto de la actividad?",
       confirmText: "Desinscribir",
       cancelText: "Cancelar",
-      variant: "warning",
     });
 
     if (!confirmed) return;
@@ -281,16 +281,15 @@ export default function useActividades() {
     setShowInscritosModal(false);
   };
 
-  // Descargar PDF con ConfirmModal 'info'
   const handleDownloadAttendance = async (actividad) => {
     if (!actividad) return;
 
     const confirmed = await ask({
-      title: "Descargar PDF",
-      message: `¿Deseas descargar la lista de asistencia de "${actividad.nombre}" en PDF?`,
+      title: "Descargar lista de asistencia",
+      message: `¿Deseas descargar el PDF de asistencia de la actividad "${actividad.nombre}"?`,
       confirmText: "Descargar",
       cancelText: "Cancelar",
-      variant: "info",
+      variant: "info", // 👉 Modal estilo informativo
     });
 
     if (!confirmed) return;
@@ -311,13 +310,12 @@ export default function useActividades() {
     }
   };
 
-  // Descargar Excel con ConfirmModal 'info'
   const handleDownloadExcel = async (actividad) => {
     if (!actividad) return;
 
     const confirmed = await ask({
-      title: "Descargar Excel",
-      message: `¿Deseas descargar la lista de inscritos de "${actividad.nombre}" en Excel?`,
+      title: "Descargar Excel de inscritos",
+      message: `¿Deseas descargar el Excel de inscritos de la actividad "${actividad.nombre}"?`,
       confirmText: "Descargar",
       cancelText: "Cancelar",
       variant: "info",
@@ -326,15 +324,21 @@ export default function useActividades() {
     if (!confirmed) return;
 
     try {
-      const blob = await downloadInscritosExcel(actividad.id);
+      const response = await downloadInscritosExcel(actividad.id);
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
-      link.setAttribute("download", `Lista_Inscritos_${actividad.nombre}.xlsx`);
-      document.body.appendChild(link);
+      link.download = `actividad-${actividad.id}-inscritos.xlsx`;
       link.click();
-      link.remove();
+
       window.URL.revokeObjectURL(url);
+
       toast.success("Excel descargado.");
     } catch (error) {
       console.error("Error al descargar Excel:", error);
@@ -342,7 +346,7 @@ export default function useActividades() {
     }
   };
 
-  // Funciones de paginación
+  // ✅ Funciones de paginación del servidor
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= lastPage) {
       setCurrentPage(newPage);
@@ -351,7 +355,7 @@ export default function useActividades() {
 
   const handlePerPageChange = (newPerPage) => {
     setPerPage(newPerPage);
-    setCurrentPage(1);
+    setCurrentPage(1); // Volver a la primera página al cambiar cantidad
   };
 
   return {

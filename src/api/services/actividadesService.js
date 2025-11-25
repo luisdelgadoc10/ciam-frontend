@@ -1,15 +1,19 @@
 // src/api/services/actividadesService.js
 import axiosClient from "../axiosClient";
 
-// 🆕 Actividades con paginación
-// NOTA: El endpoint NO acepta per_page, solo usa page con 15 items por defecto
-export const getActividades = (page = 1) => 
-  axiosClient.get(`/activities?page=${page}`);
+// ✅ Backend corregido - Paginación funcionando correctamente
+export const getActividades = (page = 1, perPage = 10) =>
+  axiosClient.get("/activities", {
+    params: {
+      page,
+      per_page: perPage,
+    },
+  });
 
 export const getTiposActividades = () => axiosClient.get("/tipos-actividades");
 
 // 🆕 Adultos Mayores con paginación (si no lo tienes ya)
-export const getAdultosMayores = (page = 1, perPage = 1000) => 
+export const getAdultosMayores = (page = 1, perPage = 1000) =>
   axiosClient.get(`/adultoMayor?page=${page}&per_page=${perPage}`);
 
 export const getInscritos = (id) =>
@@ -34,9 +38,7 @@ export const downloadAttendancePDF = (activityId) =>
   });
 
 export const downloadInscritosExcel = async (actividadId) => {
-  const response = await axiosClient.get(
-    `/reports/activity/${actividadId}/excel`,
-    { responseType: "blob" }
-  );
-  return response.data;
+  return axiosClient.get(`/reports/activity/${actividadId}/excel`, {
+    responseType: "blob",
+  });
 };

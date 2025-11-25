@@ -9,6 +9,7 @@ import {
   getEstadosCiviles,
   getParentescos,
   getCumpleanos, // 🆕 Importar función de cumpleaños
+  getCarnetAdultoMayor,
 } from "../api/services/adultoMayorService";
 
 import { useConfirmDialog } from "../context/ConfirmProvider";
@@ -27,13 +28,16 @@ export default function useAdultosMayores() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [perPage, setPerPage] = useState(15);
-  
+
+  const [showCarnetModal, setShowCarnetModal] = useState(false);
+  const [carnetData, setCarnetData] = useState(null);
+
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
@@ -69,14 +73,13 @@ export default function useAdultosMayores() {
     try {
       setLoading(true);
       const { data } = await getAdultosMayores(currentPage, perPage);
-      
+
       const list = data.data || [];
       setAdultosMayores(Array.isArray(list) ? list : []);
-      
+
       setLastPage(data.last_page || 1);
       setTotal(data.total || 0);
       setCurrentPage(data.current_page || 1);
-      
     } catch (error) {
       console.error("Error al cargar adultos mayores:", error);
       toast.error("Error al cargar adultos mayores");
@@ -309,6 +312,22 @@ export default function useAdultosMayores() {
     setCurrentPage(1);
   };
 
+  // 🪪 Obtener datos del carnet virtual (QR)
+  const fetchCarnet = async (id) => {
+    try {
+      setLoading(true);
+      const { data } = await getCarnetAdultoMayor(id);
+
+      setCarnetData(data); // ✔️ Guardar datos
+      setShowCarnetModal(true); // ✔️ Abrir modal
+    } catch (error) {
+      console.error("Error al obtener carnet:", error);
+      toast.error("No se pudo obtener el carnet del adulto mayor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     adultosMayores,
     sexos,
@@ -336,5 +355,9 @@ export default function useAdultosMayores() {
     handlePageChange,
     handlePerPageChange,
     fetchTodosCumpleanos, // 🆕 Exportar función de cumpleaños
+    fetchCarnet, // 🪪 Exportar función para obtener carnet virtual
+    showCarnetModal, // 🆕
+    setShowCarnetModal, // 🆕
+    carnetData, // 🆕
   };
 }

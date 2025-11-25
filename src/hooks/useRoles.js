@@ -64,10 +64,17 @@ export default function useRoles() {
 
   const handleEdit = (role) => {
     setIsEditing(true);
-    setSelectedRole(role);
+    setSelectedRole({
+      ...role,
+      id: Number(role.id), // ← convertir aquí también
+    });
 
-    const permissionIds = role.permissions?.map((p) => p.id) || [];
-    setFormData({ name: role.name, permissions: permissionIds });
+    const permissionIds = role.permissions?.map((p) => Number(p.id)) || [];
+
+    setFormData({
+      name: role.name,
+      permissions: permissionIds,
+    });
 
     setShowModal(true);
   };
@@ -109,11 +116,12 @@ export default function useRoles() {
   };
 
   const handlePermissionChange = (permissionId, checked) => {
+    const id = Number(permissionId);
     setFormData((prev) => {
       const current = prev.permissions || [];
       let updated = checked
-        ? [...current, permissionId]
-        : current.filter((id) => id !== permissionId);
+        ? [...current, id]
+        : current.filter((p) => p !== id);
 
       return { ...prev, permissions: updated };
     });
@@ -126,25 +134,23 @@ export default function useRoles() {
 
     try {
       if (isEditing && selectedRole) {
-        // EDITAR
-        await updateRole(selectedRole.id, { name: formData.name });
+        // EDITAR ROL
+        await updateRole(Number(selectedRole.id), { name: formData.name });
 
-        if (formData.permissions?.length) {
-          await assignPermissions(selectedRole.id, {
-            permissions: formData.permissions,
-          });
-        }
+        // ASIGNAR PERMISOS AL ROL EDITADO
+        await assignPermissions(Number(selectedRole.id), {
+          permissions: formData.permissions.map(Number),
+        });
 
         success("Rol actualizado correctamente");
       } else {
-        // CREAR
-        const { data } = await createRole({ name: formData.name });
+        // CREAR ROL
+        const { data: newRole } = await createRole({ name: formData.name });
 
-        if (formData.permissions?.length && data?.id) {
-          await assignPermissions(data.id, {
-            permissions: formData.permissions,
-          });
-        }
+        // ASIGNAR PERMISOS AL ROL CREADO
+        await assignPermissions(Number(newRole.id), {
+          permissions: formData.permissions.map(Number),
+        });
 
         success("Rol creado correctamente");
       }

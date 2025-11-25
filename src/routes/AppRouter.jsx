@@ -102,7 +102,7 @@ export default function AppRouter() {
             }
           />
           <Route
-            path="cumpleaños"
+            path="cumpleanos"
             element={
               <PrivateRoute>
                 <CumpleanosCalendarioPage />
