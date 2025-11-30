@@ -4,8 +4,9 @@ import { UserPlus, Edit, Trash2, Eye, QrCode } from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalAdultoForm from "./components/ModalAdultoForm";
 import ModalAdultoView from "./components/ModalAdultoView";
-import ModalCarnet from "./components/ModalCarnet"; // 🪪 Importar modal de carnet virtual
+import ModalCarnet from "./components/ModalCarnet";
 import useAdultosMayores from "../../hooks/useAdultosMayores";
+import PermissionGate from "../../components/PermissionGate";
 
 export default function AdultoMayorPage() {
   const {
@@ -20,7 +21,6 @@ export default function AdultoMayorPage() {
     showModal,
     showViewModal,
     isEditing,
-    // 🆕 Datos de paginación
     currentPage,
     lastPage,
     total,
@@ -33,10 +33,8 @@ export default function AdultoMayorPage() {
     handleSubmit,
     setShowModal,
     setShowViewModal,
-    // 🆕 Funciones de paginación
     handlePageChange,
     handlePerPageChange,
-    // 🆕 CARNET VIRTUAL
     showCarnetModal,
     setShowCarnetModal,
     carnetData,
@@ -54,10 +52,6 @@ export default function AdultoMayorPage() {
         header: "Nombre Completo",
         accessorFn: (row) =>
           `${row.nombres || ""} ${row.apellidos || ""}`.trim(),
-        cell: ({ getValue }) => {
-          const nombreCompleto = getValue();
-          return nombreCompleto || "Sin nombre registrado";
-        },
       },
       {
         accessorKey: "sexo.nombre",
@@ -74,39 +68,56 @@ export default function AdultoMayorPage() {
         header: "Celular",
         cell: (info) => info.getValue(),
       },
+
+      // ACCIONES + PERMISSIONS
       {
         id: "acciones",
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-            <button
-              onClick={() => handleView(info.row.original)}
-              className="text-blue-600 hover:text-blue-800 transition"
-              title="Ver detalles"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => fetchCarnet(info.row.original.id)}
-              className="text-green-600 hover:text-green-800 transition"
-              title="Carnet Virtual"
-            >
-              <QrCode className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleEdit(info.row.original)}
-              className="text-yellow-600 hover:text-yellow-800 transition"
-              title="Editar"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleDelete(info.row.original.id)}
-              className="text-red-600 hover:text-red-800 transition"
-              title="Eliminar"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {/* Ver */}
+            <PermissionGate requiredPermission="ver-detalle-adulto">
+              <button
+                onClick={() => handleView(info.row.original)}
+                className="text-blue-600 hover:text-blue-800 transition"
+                title="Ver detalles"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* Carnet */}
+            <PermissionGate requiredPermission="ver-carnet-adulto">
+              <button
+                onClick={() => fetchCarnet(info.row.original.id)}
+                className="text-green-600 hover:text-green-800 transition"
+                title="Carnet Virtual"
+              >
+                <QrCode className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* Editar */}
+            <PermissionGate requiredPermission="editar-adulto">
+              <button
+                onClick={() => handleEdit(info.row.original)}
+                className="text-yellow-600 hover:text-yellow-800 transition"
+                title="Editar"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* Eliminar */}
+            <PermissionGate requiredPermission="eliminar-adulto">
+              <button
+                onClick={() => handleDelete(info.row.original.id)}
+                className="text-red-600 hover:text-red-800 transition"
+                title="Eliminar"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </PermissionGate>
           </div>
         ),
       },
@@ -121,18 +132,21 @@ export default function AdultoMayorPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Adultos Mayores</h1>
           <p className="text-gray-600">Gestión de beneficiarios del CIAM</p>
-          {/* 🆕 Mostrar total de registros */}
           <p className="text-sm text-gray-500 mt-1">
             Total de registros: {total}
           </p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
-        >
-          <UserPlus className="w-5 h-5" />
-          Nuevo Adulto Mayor
-        </button>
+
+        {/* CREAR + PERMISSION */}
+        <PermissionGate requiredPermission="crear-adulto">
+          <button
+            onClick={handleCreate}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
+          >
+            <UserPlus className="w-5 h-5" />
+            Nuevo Adulto Mayor
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Tabla */}
@@ -165,7 +179,7 @@ export default function AdultoMayorPage() {
         loading={loading}
       />
 
-      {/* Modal Ver (solo lectura) */}
+      {/* Modal Ver */}
       <ModalAdultoView
         show={showViewModal}
         onClose={() => setShowViewModal(false)}
@@ -173,6 +187,7 @@ export default function AdultoMayorPage() {
         onEdit={handleEdit}
       />
 
+      {/* Carnet Virtual */}
       <ModalCarnet
         show={showCarnetModal}
         onClose={() => setShowCarnetModal(false)}

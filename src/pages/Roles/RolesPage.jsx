@@ -1,8 +1,10 @@
+// src/pages/Roles/RolesPage.jsx
 import { useMemo } from "react";
 import { Edit, Trash2, Eye, Plus } from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalRol from "./components/ModalRol";
 import useRoles from "../../hooks/useRoles";
+import PermissionGate from "../../components/PermissionGate";
 
 export default function RolesPage() {
   const {
@@ -43,27 +45,38 @@ export default function RolesPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-            <button
-              onClick={() => handleView(info.row.original)}
-              className="text-blue-600 hover:text-blue-800 transition"
-              title="Ver"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleEdit(info.row.original)}
-              className="text-yellow-600 hover:text-yellow-800 transition"
-              title="Editar"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleDelete(info.row.original.id)}
-              className="text-red-600 hover:text-red-800 transition"
-              title="Eliminar"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {/* 🔵 Ver */}
+            <PermissionGate permission="ver-detalle-rol">
+              <button
+                onClick={() => handleView(info.row.original)}
+                className="text-blue-600 hover:text-blue-800 transition"
+                title="Ver"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* 🟡 Editar */}
+            <PermissionGate permission="editar-rol">
+              <button
+                onClick={() => handleEdit(info.row.original)}
+                className="text-yellow-600 hover:text-yellow-800 transition"
+                title="Editar"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* 🔴 Eliminar */}
+            <PermissionGate permission="eliminar-rol">
+              <button
+                onClick={() => handleDelete(info.row.original.id)}
+                className="text-red-600 hover:text-red-800 transition"
+                title="Eliminar"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </PermissionGate>
           </div>
         ),
       },
@@ -79,13 +92,17 @@ export default function RolesPage() {
           <h1 className="text-2xl font-bold text-gray-800">Roles</h1>
           <p className="text-gray-600">Gestión de roles y permisos</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Nuevo Rol
-        </button>
+
+        {/* 🟢 Crear nuevo rol */}
+        <PermissionGate permission="crear-rol">
+          <button
+            onClick={handleCreate}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Nuevo Rol
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Tabla */}
@@ -99,12 +116,12 @@ export default function RolesPage() {
         formData={formData}
         permissions={permissions}
         onChange={handleFormChange}
-        onPermissionChange={handlePermissionChange} // ← nuevo
+        onPermissionChange={handlePermissionChange}
         onSubmit={handleSubmit}
         loading={loading}
       />
 
-      {/* Modal Ver (solo lectura) */}
+      {/* Modal Ver */}
       <ModalRol
         show={showViewModal}
         onClose={() => setShowViewModal(false)}

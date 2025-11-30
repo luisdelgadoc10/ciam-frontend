@@ -1,8 +1,11 @@
 import { useMemo } from "react";
-import { Edit, Trash2, Eye, Plus, Key } from "lucide-react";
+import { Edit, Trash2, Eye, Plus } from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalUsuario from "./components/ModalUsuario";
 import useUsuarios from "../../hooks/useUsuarios";
+
+// 🆕 IMPORTAR PERMISSION GATE
+import PermissionGate from "../../components/PermissionGate";
 
 export default function UsuariosPage() {
   const {
@@ -56,7 +59,6 @@ export default function UsuariosPage() {
 
           let date;
           if (typeof raw === "string") {
-            // Soportar "2025-10-25 15:00:00"
             const clean = raw.substring(0, 19).replace(" ", "T");
             const [datePart, timePart] = clean.split("T");
             if (datePart && timePart) {
@@ -65,7 +67,6 @@ export default function UsuariosPage() {
               date = new Date(y, m - 1, d, h, min);
             }
           } else if (raw?.date) {
-            // Soporte Laravel
             const [datePart, timePart] = raw.date.split(" ");
             if (datePart && timePart) {
               const [y, m, d] = datePart.split("-").map(Number);
@@ -77,7 +78,6 @@ export default function UsuariosPage() {
           if (!date || isNaN(date.getTime())) {
             date = new Date(raw);
           }
-
           if (isNaN(date?.getTime())) return "Inválida";
 
           return date.toLocaleDateString("es-PE", {
@@ -92,34 +92,40 @@ export default function UsuariosPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-            <button
-              onClick={() => handleView(info.row.original)}
-              className="text-blue-600 hover:text-blue-800 transition"
-              title="Ver"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleEdit(info.row.original)}
-              className="text-yellow-600 hover:text-yellow-800 transition"
-              title="Editar"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-            {/* <button
-              onClick={() => handleResetPassword(info.row.original.id)}
-              className="text-purple-600 hover:text-purple-800 transition"
-              title="Resetear contraseña"
-            >
-              <Key className="w-4 h-4" />
-            </button> */}
-            <button
-              onClick={() => handleDelete(info.row.original.id)}
-              className="text-red-600 hover:text-red-800 transition"
-              title="Eliminar"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+
+            {/* 🟦 Ver usuario */}
+            <PermissionGate permission="ver-detalle-usuario">
+              <button
+                onClick={() => handleView(info.row.original)}
+                className="text-blue-600 hover:text-blue-800 transition"
+                title="Ver"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* 🟨 Editar usuario */}
+            <PermissionGate permission="editar-usuario">
+              <button
+                onClick={() => handleEdit(info.row.original)}
+                className="text-yellow-600 hover:text-yellow-800 transition"
+                title="Editar"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            {/* 🟥 Eliminar usuario */}
+            <PermissionGate permission="eliminar-usuario">
+              <button
+                onClick={() => handleDelete(info.row.original.id)}
+                className="text-red-600 hover:text-red-800 transition"
+                title="Eliminar"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
           </div>
         ),
       },
@@ -135,24 +141,29 @@ export default function UsuariosPage() {
           <h1 className="text-2xl font-bold text-gray-800">Usuarios</h1>
           <p className="text-gray-600">Gestión de usuarios del sistema</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Nuevo Usuario
-        </button>
+
+        {/* 🆕 Botón con permiso */}
+        <PermissionGate permission="crear-usuario">
+          <button
+            onClick={handleCreate}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Nuevo Usuario
+          </button>
+        </PermissionGate>
       </div>
 
       {/* Tabla */}
       <CustomTable data={usuarios} columns={columns} searchable={true} />
 
+      {/* Modal Crear/Editar */}
       <ModalUsuario
         show={showModal}
         onClose={() => setShowModal(false)}
         modo={isEditing ? "editar" : "crear"}
         formData={formData}
-        roles={roles} // ← lista de roles disponibles
+        roles={roles}
         onChange={handleFormChange}
         onRoleChange={handleRoleChange}
         onSubmit={handleSubmit}
@@ -164,7 +175,7 @@ export default function UsuariosPage() {
         show={showViewModal}
         onClose={() => setShowViewModal(false)}
         modo="ver"
-        formData={selectedUsuario} // ← con roles como objetos
+        formData={selectedUsuario}
       />
     </div>
   );

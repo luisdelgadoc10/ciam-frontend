@@ -14,6 +14,8 @@ import ModalActividad from "./components/ModalActividad";
 import ModalInscritos from "./components/ModalInscritos";
 import useActividades from "../../hooks/useActividades";
 
+import PermissionGate from "../../components/PermissionGate";
+
 export default function ActividadesPage() {
   const {
     actividades,
@@ -100,48 +102,65 @@ export default function ActividadesPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-            <button
-              onClick={() => handleDownloadAttendance(info.row.original)}
-              className="text-indigo-600 hover:text-indigo-800 transition"
-              title="Descargar Lista de Asistencia"
-            >
-              <FileCheck className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleView(info.row.original)}
-              className="text-blue-600 hover:text-blue-800 transition"
-              title="Ver detalles"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleVerInscritos(info.row.original)}
-              className="text-purple-600 hover:text-purple-800 transition"
-              title="Ver inscritos"
-            >
-              <Users className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleInscribir(info.row.original)}
-              className="text-green-600 hover:text-green-800 transition"
-              title="Inscribir participante"
-            >
-              <UserPlus className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleEdit(info.row.original)}
-              className="text-yellow-600 hover:text-yellow-800 transition"
-              title="Editar"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleDelete(info.row.original.id)}
-              className="text-red-600 hover:text-red-800 transition"
-              title="Eliminar"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <PermissionGate permission="descargar-asistencia">
+              <button
+                onClick={() => handleDownloadAttendance(info.row.original)}
+                className="text-indigo-600 hover:text-indigo-800 transition"
+                title="Descargar Lista de Asistencia"
+              >
+                <FileCheck className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            <PermissionGate permission="ver-detalle-actividad">
+              <button
+                onClick={() => handleView(info.row.original)}
+                className="text-blue-600 hover:text-blue-800 transition"
+                title="Ver detalles"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            <PermissionGate permission="ver-inscritos-actividad">
+              <button
+                onClick={() => handleVerInscritos(info.row.original)}
+                className="text-purple-600 hover:text-purple-800 transition"
+                title="Ver inscritos"
+              >
+                <Users className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            <PermissionGate permission="inscribir-actividad">
+              <button
+                onClick={() => handleInscribir(info.row.original)}
+                className="text-green-600 hover:text-green-800 transition"
+                title="Inscribir participante"
+              >
+                <UserPlus className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            <PermissionGate permission="editar-actividad">
+              <button
+                onClick={() => handleEdit(info.row.original)}
+                className="text-yellow-600 hover:text-yellow-800 transition"
+                title="Editar"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+
+            <PermissionGate permission="eliminar-actividad">
+              <button
+                onClick={() => handleDelete(info.row.original.id)}
+                className="text-red-600 hover:text-red-800 transition"
+                title="Eliminar"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </PermissionGate>
           </div>
         ),
       },
@@ -164,13 +183,15 @@ export default function ActividadesPage() {
           <h1 className="text-2xl font-bold text-gray-800">Actividades</h1>
           <p className="text-gray-600">Gestión de actividades del CIAM</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
-        >
-          <Calendar className="w-5 h-5" />
-          Nueva Actividad
-        </button>
+        <PermissionGate permission="crear-actividad">
+          <button
+            onClick={handleCreate}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
+          >
+            <Calendar className="w-5 h-5" />
+            Nueva Actividad
+          </button>
+        </PermissionGate>
       </div>
 
       {/* 🆕 Tabla con paginación del servidor */}
