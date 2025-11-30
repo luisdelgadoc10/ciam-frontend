@@ -87,15 +87,13 @@ export default function AdultoMayorPage() {
             </PermissionGate>
 
             {/* Carnet */}
-            <PermissionGate requiredPermission="ver-carnet-adulto">
-              <button
-                onClick={() => fetchCarnet(info.row.original.id)}
-                className="text-green-600 hover:text-green-800 transition"
-                title="Carnet Virtual"
-              >
-                <QrCode className="w-4 h-4" />
-              </button>
-            </PermissionGate>
+            <button
+              onClick={() => fetchCarnet(info.row.original.id)}
+              className="text-green-600 hover:text-green-800 transition"
+              title="Carnet Virtual"
+            >
+              <QrCode className="w-4 h-4" />
+            </button>
 
             {/* Editar */}
             <PermissionGate requiredPermission="editar-adulto">
