@@ -48,3 +48,11 @@ export const getParentescos = () => axiosClient.get("/parentescos");
 
 // 🔹 Tipos de Categorías (Programas Sociales)
 export const getTiposCategorias = () => axiosClient.get("/tipos-categorias");
+
+// 🟩 Asignar categoría (Programa Social) a un Adulto Mayor
+export const assignCategoriaToAdultoMayor = (adultoMayorId, categoriaId) =>
+  axiosClient.post(`/adultoMayor/${adultoMayorId}/categorias/${categoriaId}`);
+
+// 🟥 Quitar categoría (Programa Social) del Adulto Mayor
+export const removeCategoriaFromAdultoMayor = (adultoMayorId, categoriaId) =>
+  axiosClient.delete(`/adultoMayor/${adultoMayorId}/categorias/${categoriaId}`);

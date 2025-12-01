@@ -127,6 +127,9 @@ export default function useAttendances() {
     const confirmed = await ask({
       title: "Eliminar asistencia",
       message: "¿Deseas eliminar esta asistencia? Esta acción es irreversible.",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "error", // 👉 Modal estilo informativo
     });
 
     if (!confirmed) return;

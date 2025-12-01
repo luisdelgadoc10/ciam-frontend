@@ -1,9 +1,9 @@
 // src/pages/Asistencias/components/ModalAttendanceForm.jsx
 import { useEffect } from "react";
-import { UserCheck, Calendar, Users, CheckCircle2, Save } from "lucide-react";
+import { UserCheck, Calendar, Save } from "lucide-react";
 import ModalBase from "../../../components/ui/ModalBase";
-import InputField from "../../../components/ui/InputField";
 import SelectField from "../../../components/ui/SelectField";
+import Select from "react-select";
 
 // Componente interno que SIEMPRE monta hooks
 function ModalContent({
@@ -15,11 +15,11 @@ function ModalContent({
   onChange,
   onSubmit,
   loading,
-  setFormData,
   onClose,
 }) {
   const isEdit = modo === "editar";
 
+  // ✅ CORREGIDO: Usar onChange en lugar de setFormData
   useEffect(() => {
     if (!formData.activity_id) return;
 
@@ -34,16 +34,19 @@ function ModalContent({
           .split("T")[0];
 
         if (formData.attendance_date !== fecha) {
-          setFormData((prev) => ({
-            ...prev,
-            attendance_date: fecha,
-          }));
+          // ✅ Usar onChange para actualizar el estado
+          onChange({
+            target: {
+              name: "attendance_date",
+              value: fecha,
+            },
+          });
         }
       }
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [formData.activity_id, activities, formData.attendance_date, setFormData]);
+  }, [formData.activity_id, activities, formData.attendance_date, onChange]);
 
   const renderFooter = () => (
     <>
@@ -92,20 +95,51 @@ function ModalContent({
             Información de Asistencia
           </h3>
           <div className="space-y-5 bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-            {/* Actividad */}
-            <SelectField
-              label="Actividad"
-              name="activity_id"
-              value={formData.activity_id}
-              onChange={onChange}
-              options={activities.map(act => ({
-                id: act.id,
-                nombre: act.nombre || act.name
-              }))}
-              disabled={isEdit}
-              required
-              error={errors.activity_id}
-            />
+            {/* 🔵 ACTIVIDAD CON react-select */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Actividad <span className="text-red-500">*</span>
+              </label>
+              <Select
+                isDisabled={isEdit}
+                value={
+                  activities
+                    .map((a) => ({
+                      value: a.id,
+                      label: a.nombre || a.name,
+                    }))
+                    .find((opt) => opt.value === formData.activity_id) || null
+                }
+                onChange={(selected) => {
+                  onChange({
+                    target: {
+                      name: "activity_id",
+                      value: selected ? selected.value : "",
+                    },
+                  });
+                }}
+                options={activities.map((a) => ({
+                  value: a.id,
+                  label: a.nombre || a.name,
+                }))}
+                placeholder="Seleccione una actividad..."
+                noOptionsMessage={() => "No hay actividades disponibles"}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '42px',
+                    borderRadius: '0.75rem',
+                  }),
+                }}
+              />
+              {errors.activity_id && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.activity_id[0]}
+                </p>
+              )}
+            </div>
 
             {/* Adulto Mayor */}
             <div>
@@ -114,9 +148,9 @@ function ModalContent({
                 name="adulto_mayor_id"
                 value={formData.adulto_mayor_id}
                 onChange={onChange}
-                options={inscritosActividad.map(adulto => ({
+                options={inscritosActividad.map((adulto) => ({
                   id: adulto.id,
-                  nombre: `${adulto.nombres} ${adulto.apellidos} - ${adulto.dni}`
+                  nombre: `${adulto.nombres} ${adulto.apellidos} - ${adulto.dni}`,
                 }))}
                 disabled={!formData.activity_id || isEdit}
                 required
@@ -164,7 +198,7 @@ function ModalContent({
                 { id: "asistió", nombre: "Asistió" },
                 { id: "falta", nombre: "Falta" },
                 { id: "tardanza", nombre: "Tardanza" },
-                { id: "justificado", nombre: "Justificado" }
+                { id: "justificado", nombre: "Justificado" },
               ]}
               required
               error={errors.status}
@@ -176,7 +210,7 @@ function ModalContent({
   );
 }
 
-// Componente exterior: controla la condición de renderizado
+// Componente exterior
 export default function ModalAttendanceForm(props) {
   if (!props.show) return null;
   return <ModalContent {...props} />;

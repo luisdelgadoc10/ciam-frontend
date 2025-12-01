@@ -1,12 +1,13 @@
 // src/pages/Beneficiarios/AdultoMayorPage.jsx
 import { useMemo } from "react";
-import { UserPlus, Edit, Trash2, Eye, QrCode } from "lucide-react";
+import { UserPlus, Edit, Trash2, Eye, QrCode, ListChecks } from "lucide-react";
 import CustomTable from "../../components/ui/CustomTable";
 import ModalAdultoForm from "./components/ModalAdultoForm";
 import ModalAdultoView from "./components/ModalAdultoView";
 import ModalCarnet from "./components/ModalCarnet";
 import useAdultosMayores from "../../hooks/useAdultosMayores";
 import PermissionGate from "../../components/PermissionGate";
+import ModalAsignarProgramas from "./components/ModalAsignarProgramas";
 
 export default function AdultoMayorPage() {
   const {
@@ -25,6 +26,7 @@ export default function AdultoMayorPage() {
     lastPage,
     total,
     perPage,
+    showProgramasModal,
     handleCreate,
     handleEdit,
     handleView,
@@ -37,10 +39,19 @@ export default function AdultoMayorPage() {
     handlePerPageChange,
     showCarnetModal,
     setShowCarnetModal,
+    setShowProgramasModal,
+    setSelectedAdulto,
     carnetData,
     fetchCarnet,
+    tiposCategorias,
+    assignCategoria,
+    removeCategoria,
   } = useAdultosMayores();
 
+  const handleOpenProgramas = (adulto) => {
+    setSelectedAdulto(adulto);
+    setShowProgramasModal(true);
+  };
   const columns = useMemo(
     () => [
       {
@@ -76,7 +87,7 @@ export default function AdultoMayorPage() {
         cell: (info) => (
           <div className="flex gap-2">
             {/* Ver */}
-            <PermissionGate requiredPermission="ver-detalle-adulto">
+            <PermissionGate permission="ver-detalle-adulto">
               <button
                 onClick={() => handleView(info.row.original)}
                 className="text-blue-600 hover:text-blue-800 transition"
@@ -95,8 +106,17 @@ export default function AdultoMayorPage() {
               <QrCode className="w-4 h-4" />
             </button>
 
+            {/* Programas Sociales */}
+            <button
+              onClick={() => handleOpenProgramas(info.row.original)}
+              className="text-purple-600 hover:text-purple-800 transition"
+              title="Asignar Programas Sociales"
+            >
+              <ListChecks className="w-4 h-4" />
+            </button>
+
             {/* Editar */}
-            <PermissionGate requiredPermission="editar-adulto">
+            <PermissionGate permission="editar-adulto">
               <button
                 onClick={() => handleEdit(info.row.original)}
                 className="text-yellow-600 hover:text-yellow-800 transition"
@@ -107,7 +127,7 @@ export default function AdultoMayorPage() {
             </PermissionGate>
 
             {/* Eliminar */}
-            <PermissionGate requiredPermission="eliminar-adulto">
+            <PermissionGate permission="eliminar-adulto">
               <button
                 onClick={() => handleDelete(info.row.original.id)}
                 className="text-red-600 hover:text-red-800 transition"
@@ -136,7 +156,7 @@ export default function AdultoMayorPage() {
         </div>
 
         {/* CREAR + PERMISSION */}
-        <PermissionGate requiredPermission="crear-adulto">
+        <PermissionGate permission="crear-adulto">
           <button
             onClick={handleCreate}
             className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-900 transition"
@@ -190,6 +210,16 @@ export default function AdultoMayorPage() {
         show={showCarnetModal}
         onClose={() => setShowCarnetModal(false)}
         carnet={carnetData}
+      />
+
+      <ModalAsignarProgramas
+        show={showProgramasModal}
+        onClose={() => setShowProgramasModal(false)}
+        adulto={selectedAdulto}
+        programas={tiposCategorias} // viene del hook
+        assignCategoria={assignCategoria}
+        removeCategoria={removeCategoria}
+        loading={loading}
       />
     </div>
   );

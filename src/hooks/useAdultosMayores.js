@@ -10,6 +10,9 @@ import {
   getParentescos,
   getCumpleanos, // 🆕 Importar función de cumpleaños
   getCarnetAdultoMayor,
+  getTiposCategorias,
+  assignCategoriaToAdultoMayor, // 🟩
+  removeCategoriaFromAdultoMayor, // 🟥
 } from "../api/services/adultoMayorService";
 
 import { useConfirmDialog } from "../context/ConfirmProvider";
@@ -37,6 +40,8 @@ export default function useAdultosMayores() {
 
   const [showCarnetModal, setShowCarnetModal] = useState(false);
   const [carnetData, setCarnetData] = useState(null);
+  const [tiposCategorias, setTiposCategorias] = useState([]);
+  const [showProgramasModal, setShowProgramasModal] = useState(false);
 
   const [formData, setFormData] = useState({
     nombres: "",
@@ -66,7 +71,18 @@ export default function useAdultosMayores() {
       fetchSexos(),
       fetchEstadosCiviles(),
       fetchParentescos(),
+      fetchTiposCategorias(), // 🆕
     ]);
+  };
+
+  const fetchTiposCategorias = async () => {
+    try {
+      const { data } = await getTiposCategorias();
+      setTiposCategorias(data || []);
+    } catch (error) {
+      console.error("Error al cargar tipos de categorías:", error);
+      toast.error("No se pudieron cargar los programas sociales");
+    }
   };
 
   const fetchAdultosMayores = async () => {
@@ -328,6 +344,40 @@ export default function useAdultosMayores() {
     }
   };
 
+  const assignCategoria = async (adultoMayorId, categoriaId) => {
+    try {
+      setLoading(true);
+      await assignCategoriaToAdultoMayor(adultoMayorId, categoriaId);
+
+      toast.success("Categoría asignada correctamente");
+
+      // Opcional: recargar adulto para ver cambios
+      await fetchAdultosMayores();
+    } catch (error) {
+      console.error("Error asignando categoría:", error);
+      toast.error("No se pudo asignar la categoría");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeCategoria = async (adultoMayorId, categoriaId) => {
+    try {
+      setLoading(true);
+      await removeCategoriaFromAdultoMayor(adultoMayorId, categoriaId);
+
+      toast.success("Categoría removida correctamente");
+
+      // Opcional: recargar listados
+      await fetchAdultosMayores();
+    } catch (error) {
+      console.error("Error removiendo categoría:", error);
+      toast.error("No se pudo remover la categoría");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     adultosMayores,
     sexos,
@@ -344,6 +394,7 @@ export default function useAdultosMayores() {
     lastPage,
     total,
     perPage,
+    setSelectedAdulto,
     handleCreate,
     handleEdit,
     handleView,
@@ -359,5 +410,11 @@ export default function useAdultosMayores() {
     showCarnetModal, // 🆕
     setShowCarnetModal, // 🆕
     carnetData, // 🆕
+    // 🟩🟥 NUEVO:
+    assignCategoria,
+    removeCategoria,
+    tiposCategorias,
+    showProgramasModal,
+    setShowProgramasModal,
   };
 }

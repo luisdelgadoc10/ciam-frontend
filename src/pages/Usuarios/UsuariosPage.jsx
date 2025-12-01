@@ -92,7 +92,6 @@ export default function UsuariosPage() {
         header: "Acciones",
         cell: (info) => (
           <div className="flex gap-2">
-
             {/* 🟦 Ver usuario */}
             <PermissionGate permission="ver-detalle-usuario">
               <button
@@ -125,7 +124,6 @@ export default function UsuariosPage() {
                 <Trash2 className="w-4 h-4" />
               </button>
             </PermissionGate>
-
           </div>
         ),
       },

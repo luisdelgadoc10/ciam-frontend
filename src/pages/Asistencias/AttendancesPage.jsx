@@ -5,6 +5,7 @@ import CustomTable from "../../components/ui/CustomTable";
 import ModalAttendanceForm from "./components/ModalAttendanceForm";
 import ModalAttendanceView from "./components/ModalAttendanceView";
 import useAttendances from "../../hooks/useAttendances";
+import Select from "react-select";
 
 export default function AttendancesPage() {
   const {
@@ -121,13 +122,13 @@ export default function AttendancesPage() {
             >
               <Edit className="w-4 h-4" />
             </button> */}
-            {/* <button
+            <button
               onClick={() => handleDelete(info.row.original.id)}
               className="text-red-600 hover:text-red-800 transition"
               title="Eliminar"
             >
               <Trash2 className="w-4 h-4" />
-            </button> */}
+            </button>
           </div>
         ),
       },
@@ -179,25 +180,31 @@ export default function AttendancesPage() {
               <Filter className="w-4 h-4 inline mr-1" />
               Por Actividad
             </label>
-            <select
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value) {
-                  fetchAttendancesByActivity(value);
+
+            <Select
+              options={activities.map((a) => ({
+                value: a.id,
+                label: a.nombre || a.name,
+              }))}
+              placeholder="Busca o selecciona una actividad..."
+              isClearable
+              value={
+                filterType === "activity"
+                  ? activities
+                      .map((a) => ({ value: a.id, label: a.nombre }))
+                      .find((option) => option.value === selectedFilter)
+                  : null
+              }
+              onChange={(option) => {
+                if (option) {
+                  fetchAttendancesByActivity(option.value);
                 } else {
                   handleClearFilter();
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={filterType === "activity" ? selectedFilter : ""}
-            >
-              <option value="">Selecciona una actividad</option>
-              {activities.map((activity) => (
-                <option key={activity.id} value={activity.id}>
-                  {activity.nombre || activity.name}
-                </option>
-              ))}
-            </select>
+              className="react-select-container"
+              classNamePrefix="react-select"
+            />
           </div>
 
           {/* Filtro por Adulto Mayor
