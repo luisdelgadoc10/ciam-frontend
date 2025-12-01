@@ -310,39 +310,24 @@ export default function useActividades() {
     }
   };
 
-  const handleDownloadExcel = async (actividad) => {
-    if (!actividad) return;
-
-    const confirmed = await ask({
-      title: "Descargar Excel de inscritos",
-      message: `¿Deseas descargar el Excel de inscritos de la actividad "${actividad.nombre}"?`,
-      confirmText: "Descargar",
-      cancelText: "Cancelar",
-      variant: "info",
-    });
-
-    if (!confirmed) return;
-
+  const handleDownloadExcel = async (actividadId) => {
     try {
-      const response = await downloadInscritosExcel(actividad.id);
+      if (!actividadId) {
+        console.error("❌ No se recibió actividadId");
+        return;
+      }
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+      const response = await downloadInscritosExcel(actividadId);
 
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-
       link.href = url;
-      link.download = `actividad-${actividad.id}-inscritos.xlsx`;
+      link.setAttribute("download", `inscritos_actividad_${actividadId}.xlsx`);
+      document.body.appendChild(link);
       link.click();
-
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Excel descargado.");
+      link.parentNode.removeChild(link);
     } catch (error) {
       console.error("Error al descargar Excel:", error);
-      toast.error("Error al descargar Excel.");
     }
   };
 
